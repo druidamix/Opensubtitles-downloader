@@ -42,7 +42,7 @@ impl Config {
         Config::write_config(&config)?;
         Ok(config)
     }
-    
+
     //Loads config file or creates a new one
     fn load_config() -> Result<Config, Box<dyn Error>> {
         let home_dir = std::env::var_os("HOME").ok_or("No home directory")?;
@@ -109,7 +109,7 @@ impl ParsedArgs {
         let matches = match opts.parse(&args[1..]) {
             Ok(m) => m,
             Err(f) => {
-                println!("{}",f);
+                println!("{}", f);
                 print_help();
                 std::process::exit(1);
             }
