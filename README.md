@@ -31,7 +31,9 @@ Add --gui as parameter to choose wich subtitle to download. (zenity)
 
 ## Release History
 
-* 0.0.1
+* 0.1.0
+    * Added user agent as parameter on osd.conf
+* 0.1.0
     * Work in progress and testing
 
 ## Meta
