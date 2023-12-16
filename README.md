@@ -17,7 +17,7 @@ Register your account on https://www.opensubtitles.com
 
 Then execute osd, so the conf file will be generated on ~/.config/osd
 
-Fill up the osd.conf with your account.
+Fill up the osd.conf with your account key, user and pass.
 
 Your are done.
 
