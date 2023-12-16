@@ -1,13 +1,13 @@
-use getopts::Options;
 use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE, USER_AGENT};
-use serde::Serialize;
-use serde_json::Value;
 use std::collections::HashMap;
-use std::error::Error;
 use std::io::{self, Read};
+use std::process::Command;
 use serde::Deserialize;
 use std::path::PathBuf;
-use std::process::Command;
+use serde_json::Value;
+use std::error::Error;
+use getopts::Options;
+use serde::Serialize;
 use std::{
     env,
     fs::File,
@@ -16,61 +16,74 @@ use std::{
     path::Path,
 };
 
-const USERAGENT: &str = "Downloader 0.01";
-
 //fn _type_of<T>(_: &T) {
 //    println!("{}", std::any::type_name::<T>())
 //}
 
-#[derive(Serialize)]
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 struct Config {
     key: String,
     user: String,
     password: String,
     language: String,
+    useragent: String,
 }
 
 //Manages osd.conf file
 impl Config {
-    fn new() -> Config {
-        Config {
+    fn build() -> Result<Config, Box<dyn Error>> {
+        let config = Config {
             key: "".to_owned(),
             user: "".to_owned(),
             password: "".to_owned(),
             language: "en".to_owned(),
-        }
+            useragent: "opensubtitles downloader".to_owned(),
+        };
+        Config::write_config(&config)?;
+        Ok(config)
     }
+    
     //Loads config file or creates a new one
     fn load_config() -> Result<Config, Box<dyn Error>> {
         let home_dir = std::env::var_os("HOME").ok_or("No home directory")?;
         let mut config_path = std::path::PathBuf::new();
-        config_path = config_path.join(home_dir.clone()).join(".config").join("osd");
+        config_path = config_path
+            .join(home_dir.clone())
+            .join(".config")
+            .join("osd");
         std::fs::create_dir_all(config_path.clone())?;
         config_path = config_path.join("osd.conf");
 
         let config = if let Ok(content) = std::fs::read(&config_path) {
-            let config :Config = toml::from_str(&String::from_utf8(content)?)?;
+            let config: Config = toml::from_str(&String::from_utf8(content)?)?;
 
-            if config.user.is_empty() || config.key.is_empty() || config.password.is_empty() || config.language.is_empty(){
-                return Err("Config file osd.conf fields cannot be empty.")?
+            if config.user.is_empty()
+                || config.key.is_empty()
+                || config.password.is_empty()
+                || config.language.is_empty()
+            {
+                return Err("Config file osd.conf fields cannot be empty.")?;
             }
             config
         } else {
             //if config file not found create a empty one
-            let config = Config::new();
-            Config::write_config(&config)?;
+            let config = Config::build()?;
             config
         };
 
         Ok(config)
     }
 
-    //Write a osd.conf file 
+    
+
+    //Write a osd.conf file
     fn write_config(config: &Config) -> Result<(), Box<dyn Error>> {
         let home_dir = std::env::var_os("HOME").ok_or("No home directory")?;
         let mut config_path = std::path::PathBuf::new();
-        config_path = config_path.join(home_dir.clone()).join(".config").join("osd");
+        config_path = config_path
+            .join(home_dir.clone())
+            .join(".config")
+            .join("osd");
         std::fs::create_dir_all(config_path.clone())?;
         config_path = config_path.join("osd.conf");
         let config_string = toml::to_string(config)?;
@@ -238,9 +251,8 @@ fn search_for_subtitle_id_key(
     key: &str,
     language: &str,
     from_gui: bool,
-    user_agent: & str,
+    user_agent: &str,
 ) -> Result<String, Box<dyn Error>> {
-
     let params = [
         ("languages", language),
         ("query", query),
@@ -337,7 +349,6 @@ fn login(
     password: &str,
     user_agent: &str,
 ) -> Result<String, Box<dyn Error>> {
-
     let mut payload = HashMap::new();
     payload.insert("username", user);
     payload.insert("password", password);
@@ -370,11 +381,10 @@ fn download_url(
     file_id: &str,
     token: &str,
     key: &str,
-    user_agent: &'static str,
+    user_agent: &str,
 ) -> Result<String, Box<dyn Error>> {
-
     let mut headers = HeaderMap::new();
-    headers.insert(USER_AGENT, HeaderValue::from_static(user_agent));
+    headers.insert(USER_AGENT, HeaderValue::from_str(user_agent)?);
     headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
     headers.insert("Accept", HeaderValue::from_static("application/json"));
     headers.insert("Api-Key", HeaderValue::from_str(key)?);
@@ -423,8 +433,7 @@ fn download_save_file(sub_url: &str, path: &str) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn run(parsed_args: ParsedArgs) -> Result<(), Box<dyn Error>> {
-    let config = Config::load_config()?;
+fn run(parsed_args: ParsedArgs, config: Config) -> Result<(), Box<dyn Error>> {
     //Gets movie properties
     let movie = Movie::build(&parsed_args.path)?;
 
@@ -432,25 +441,31 @@ fn run(parsed_args: ParsedArgs) -> Result<(), Box<dyn Error>> {
         &movie.title,
         &movie.hash,
         &config.key,
-        &config.language, 
+        &config.language,
         parsed_args.use_gui,
-        USERAGENT,
+        &config.useragent,
     )?;
 
-    let token = login(&config.key, &config.user, &config.password, USERAGENT)?;
+    let token = login(
+        &config.key,
+        &config.user,
+        &config.password,
+        &config.useragent,
+    )?;
     // download suitable subtitle
-    let sub_url = download_url(&file_id, &token, &config.key, USERAGENT)?;
+    let sub_url = download_url(&file_id, &token, &config.key, &config.useragent)?;
     download_save_file(&sub_url, &movie.path)?;
 
     Ok(())
 }
 
-fn main() -> std::io::Result<()> {
+fn main() -> Result<(),Box<dyn Error>> {
     let args = env::args().collect::<Vec<String>>();
+    let config = Config::load_config()?;
     //parse arg to a convenient struct
     let parsed_args = ParsedArgs::build(&args);
 
-    match run(parsed_args) {
+    match run(parsed_args, config) {
         Ok(_) => eprintln!("Done"),
         Err(e) => {
             if let Some(err) = e.downcast_ref::<reqwest::Error>() {
