@@ -1,5 +1,6 @@
 # Opensubtitles Downloader (new API) 
 > Download subtitles from opensubtitles.org using the new API.
+> Currently investigating how to create a new account.
 
 ## Installation
 
@@ -11,6 +12,12 @@ cd opensubtitles-new-api-subtitle-downloader
 make
 make install
 ```
+## Configure
+Register your account on https://opensubtitles.stoplight.io/docs/opensubtitles-api/e3750fd63a100-getting-started
+
+Then execute osd, so the conf file will be generated on ~/.config/osd
+
+Fill up the osd.conf with your account 
 
 
 ## Usage example
