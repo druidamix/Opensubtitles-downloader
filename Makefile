@@ -1,6 +1,5 @@
 prog :=osd
 
-
   release :=--release
   target :=release
 

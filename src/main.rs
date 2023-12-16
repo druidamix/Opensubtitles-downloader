@@ -1,13 +1,13 @@
-use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE, USER_AGENT};
-use std::collections::HashMap;
-use std::io::{self, Read};
-use std::process::Command;
-use serde::Deserialize;
-use std::path::PathBuf;
-use serde_json::Value;
-use std::error::Error;
 use getopts::Options;
+use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE, USER_AGENT};
+use serde::Deserialize;
 use serde::Serialize;
+use serde_json::Value;
+use std::collections::HashMap;
+use std::error::Error;
+use std::io::{self, Read};
+use std::path::PathBuf;
+use std::process::Command;
 use std::{
     env,
     fs::File,
@@ -42,7 +42,7 @@ impl Config {
         Config::write_config(&config)?;
         Ok(config)
     }
-    
+
     //Loads config file or creates a new one
     fn load_config() -> Result<Config, Box<dyn Error>> {
         let home_dir = std::env::var_os("HOME").ok_or("No home directory")?;
@@ -73,8 +73,6 @@ impl Config {
 
         Ok(config)
     }
-
-    
 
     //Write a osd.conf file
     fn write_config(config: &Config) -> Result<(), Box<dyn Error>> {
@@ -209,7 +207,7 @@ impl Movie {
         if fsize < HASH_BLK_SIZE {
             return Err(std::io::Error::new(
                 io::ErrorKind::Other,
-                "File size too small.",
+                "File size too small. It is not a movie.",
             ));
         }
         let iterations = HASH_BLK_SIZE / 8;
@@ -298,12 +296,12 @@ fn search_for_subtitle_id_key(
                 n["attributes"]["files"][0]["file_id"].as_i64().unwrap_or(0),
             );
 
-            let s = if n["attributes"]["moviehash_match"] == true {
+            let moviehash = if n["attributes"]["moviehash_match"] == true {
                 "✅".to_string()
             } else {
                 "".to_string()
             };
-            v_titles.push((filename, s));
+            v_titles.push((filename, moviehash));
         }
 
         let mut zenity_process = Command::new("zenity");
@@ -460,7 +458,7 @@ fn run(parsed_args: ParsedArgs, config: Config) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn main() -> Result<(),Box<dyn Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     let args = env::args().collect::<Vec<String>>();
     let config = Config::load_config()?;
     //parse arg to a convenient struct
