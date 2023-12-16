@@ -310,7 +310,7 @@ fn search_for_subtitle_id_key(
             "--width=720",
             r#"--height=400"#,
             r#"--list"#,
-            r#"--title=Holiday"#,
+            r#"--title=Choose a subtitle"#,
             "--column=Subtitle",
             r#"--column=Hash Match"#,
         ]);
