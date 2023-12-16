@@ -8,6 +8,7 @@ use std::error::Error;
 use std::io::{self, Read};
 use std::path::PathBuf;
 use std::process::Command;
+use std::result;
 use std::{
     env,
     fs::File,
@@ -42,7 +43,7 @@ impl Config {
         Config::write_config(&config)?;
         Ok(config)
     }
-
+    
     //Loads config file or creates a new one
     fn load_config() -> Result<Config, Box<dyn Error>> {
         let home_dir = std::env::var_os("HOME").ok_or("No home directory")?;
@@ -99,7 +100,7 @@ struct ParsedArgs {
 
 impl ParsedArgs {
     /// Builds a struct of arguments
-    fn build(args: &[String]) -> ParsedArgs {
+    fn build(args: &[String]) -> Result<ParsedArgs,Box<dyn Error>> {
         // -- parse arguments
         let mut opts = Options::new();
         opts.optflag("g", "gui", "Select subtitle from a list");
@@ -110,14 +111,14 @@ impl ParsedArgs {
             Err(f) => {
                 println!("{}", f);
                 print_help();
-                std::process::exit(1);
+                Err("")?
             }
         };
 
         //prints help and exits
         if matches.opt_present("h") {
             print_help();
-            std::process::exit(1);
+            Err("")?
         };
 
         let mut opt_gui = false;
@@ -129,14 +130,16 @@ impl ParsedArgs {
         //Only accepts one argument, the movie filename
         if free_args != 1 {
             print_help();
-            std::process::exit(1);
+            Err("")?
         }
 
         //Returns struct of ParsedArgs
-        return ParsedArgs {
+        let p_args =  ParsedArgs {
             use_gui: opt_gui,
             path: matches.free.first().unwrap().to_string(),
         };
+
+        Ok(p_args)
     }
 }
 
@@ -462,7 +465,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args = env::args().collect::<Vec<String>>();
     let config = Config::load_config()?;
     //parse arg to a convenient struct
-    let parsed_args = ParsedArgs::build(&args);
+    let parsed_args = ParsedArgs::build(&args)?;
 
     match run(parsed_args, config) {
         Ok(_) => eprintln!("Done"),
