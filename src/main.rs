@@ -92,6 +92,7 @@ impl Config {
         Ok(())
     }
 }
+
 ///Parsed arguments properties
 struct ParsedArgs {
     use_gui: bool,
@@ -241,7 +242,7 @@ impl Movie {
 
 /// prints help
 fn print_help() {
-    println!("usage: New Api Opensubtitles downloader [-h] [--gui] movie_file");
+    println!("usage: osd [-h] [--gui] movie_file");
 }
 
 ///Obtains movie id from opensubtitles from hash or movie filename.
