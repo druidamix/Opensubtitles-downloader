@@ -8,7 +8,6 @@ use std::error::Error;
 use std::io::{self, Read};
 use std::path::PathBuf;
 use std::process::Command;
-use std::result;
 use std::{
     env,
     fs::File,
@@ -100,25 +99,26 @@ struct ParsedArgs {
 
 impl ParsedArgs {
     /// Builds a struct of arguments
-    fn build(args: &[String]) -> Result<ParsedArgs,Box<dyn Error>> {
+    fn build(args: &[String]) -> ParsedArgs {
         // -- parse arguments
         let mut opts = Options::new();
         opts.optflag("g", "gui", "Select subtitle from a list");
         opts.optflag("h", "help", "prints this help");
 
+        //Checks for unrecognized options
         let matches = match opts.parse(&args[1..]) {
             Ok(m) => m,
             Err(f) => {
-                println!("{}", f);
+                println!("{}",f);
                 print_help();
-                Err("")?
+                std::process::exit(1);
             }
         };
 
         //prints help and exits
         if matches.opt_present("h") {
             print_help();
-            Err("")?
+            std::process::exit(1);
         };
 
         let mut opt_gui = false;
@@ -130,16 +130,14 @@ impl ParsedArgs {
         //Only accepts one argument, the movie filename
         if free_args != 1 {
             print_help();
-            Err("")?
+            std::process::exit(0);
         }
 
         //Returns struct of ParsedArgs
-        let p_args =  ParsedArgs {
+        return ParsedArgs {
             use_gui: opt_gui,
             path: matches.free.first().unwrap().to_string(),
         };
-
-        Ok(p_args)
     }
 }
 
@@ -465,7 +463,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args = env::args().collect::<Vec<String>>();
     let config = Config::load_config()?;
     //parse arg to a convenient struct
-    let parsed_args = ParsedArgs::build(&args)?;
+    let parsed_args = ParsedArgs::build(&args);
 
     match run(parsed_args, config) {
         Ok(_) => eprintln!("Done"),
