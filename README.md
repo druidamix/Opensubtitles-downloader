@@ -1,5 +1,5 @@
 # Opensubtitles Downloader (new API) 
-> Download subtitles from opensubtitles.org using the new API for GNU/Linux.<br>
+> Download subtitles from opensubtitles.org using the new API.<br>
 > Primarely it will download subtitles by hash. If none found, it download the first subtitle found.
 
 ## Installation
@@ -27,7 +27,7 @@ usage: osd [-h] [--gui] movie_file
 
 example: osd lord_of_the_rings.mp4
 
-Add --gui as parameter to choose wich subtitle to download. (zenity)
+Add --gui as parameter to choose which subtitle to download. (zenity)
 
 ## Release History
 
