@@ -1,30 +1,33 @@
 # Opensubtitles Downloader (new API) 
 > Download subtitles from opensubtitles.org using the new API.
-> Currently investigating how to create a new account.
+> Primarely it will download subtitles by hash. If none found, it download the first subtitle found.
 
 ## Installation
 
 Linux:
 
 ```sh
-git clone https://gitlab.com/marc_ra/opensubtitles-new-api-subtitle-downloader.git
-cd opensubtitles-new-api-subtitle-downloader
+git clone https://gitlab.com/marc_ra/opensubtitles-downloader.git
+cd opensubtitles-downloader
 make
 make install
 ```
 ## Configure
-Register your account on https://opensubtitles.stoplight.io/docs/opensubtitles-api/e3750fd63a100-getting-started
+Register your account on https://www.opensubtitles.com
 
 Then execute osd, so the conf file will be generated on ~/.config/osd
 
-Fill up the osd.conf with your account 
+Fill up the osd.conf with your account.
 
+Your are done.
 
 ## Usage example
 
 usage: osd [-h] [--gui] movie_file
 
 example: osd lord_of_the_rings.mp4
+
+Add --gui as parameter to choose wich subtitle to download. (zenity)
 
 ## Release History
 
@@ -36,4 +39,5 @@ example: osd lord_of_the_rings.mp4
 Your Name – Marc Rates, druidamix@gmail.com
 
 Distributed under the GPL 2.0 license. See ``LICENSE`` for more information.
+
 
