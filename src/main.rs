@@ -37,7 +37,7 @@ impl Config {
             user: "".to_owned(),
             password: "".to_owned(),
             language: "en".to_owned(),
-            useragent: "opensubtitles downloader".to_owned(),
+            useragent: "Opensubtitles Downloader".to_owned(),
         };
         Config::write_config(&config)?;
         Ok(config)
@@ -103,22 +103,22 @@ impl ParsedArgs {
     fn build(args: &[String]) -> ParsedArgs {
         // -- parse arguments
         let mut opts = Options::new();
-        opts.optflag("g", "gui", "Select subtitle from a list");
-        opts.optflag("h", "help", "prints this help");
+        opts.optflag("g", "gui", "Choose subtitle from a list");
+        opts.optflag("h", "help", "Prints this help");
 
         //Checks for unrecognized options
         let matches = match opts.parse(&args[1..]) {
             Ok(m) => m,
             Err(f) => {
                 println!("{}", f);
-                print_help();
+                print_help(opts);
                 std::process::exit(0);
             }
         };
 
         //prints help and exits
         if matches.opt_present("h") {
-            print_help();
+            print_help(opts);
             std::process::exit(1);
         };
 
@@ -130,7 +130,7 @@ impl ParsedArgs {
         let free_args = matches.free.len();
         //Only accepts one argument, the movie filename
         if free_args != 1 {
-            print_help();
+            print_help(opts);
             std::process::exit(0);
         }
 
@@ -156,7 +156,6 @@ impl Movie {
 
         //Checking file exists
         if !path.exists() {
-            print_help();
             return Err("File not found.")?;
         }
 
@@ -170,7 +169,6 @@ impl Movie {
         }
 
         if !path_movie.is_file() {
-            print_help();
             if path_movie.is_dir(){
                 return Err("The path must point to a file.")?;
             }
@@ -244,8 +242,9 @@ impl Movie {
 }
 
 /// prints help
-fn print_help() {
-    println!("usage: osd [-h] [--gui] movie_file");
+fn print_help(opts: Options) {
+   let brief =  "usage: osd [-h] [--gui] movie_file";
+    println!("{}",opts.usage(brief));
 }
 
 ///Obtains movie id from opensubtitles from hash or movie filename.
