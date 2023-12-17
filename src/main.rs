@@ -111,7 +111,7 @@ impl ParsedArgs {
             Err(f) => {
                 println!("{}", f);
                 print_help();
-                std::process::exit(1);
+                std::process::exit(0);
             }
         };
 
@@ -170,6 +170,9 @@ impl Movie {
 
         if !path_movie.is_file() {
             print_help();
+            if path_movie.is_dir(){
+                return Err("The path must point to a file.")?;
+            }
             return Err("")?;
         }
 
@@ -208,7 +211,7 @@ impl Movie {
         if fsize < HASH_BLK_SIZE {
             return Err(std::io::Error::new(
                 io::ErrorKind::Other,
-                "File size too small. It is not a movie.",
+                "File size too small.",
             ));
         }
         let iterations = HASH_BLK_SIZE / 8;
@@ -368,7 +371,7 @@ fn login(
     let resp = client.post(url).body(payload).headers(headers).send()?;
 
     if resp.status() != reqwest::StatusCode::OK {
-        return Err(format!("Bad request: {}", resp.status()))?;
+        return Err(format!("Bad request: {}, {}", resp.status(),resp.text()?))?;
     }
 
     let resp = resp.text()?;
