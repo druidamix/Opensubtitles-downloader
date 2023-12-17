@@ -61,12 +61,13 @@ impl Config {
                 || config.key.is_empty()
                 || config.password.is_empty()
                 || config.language.is_empty()
+                || config.useragent.is_empty()
             {
                 return Err("Config file osd.conf fields cannot be empty.")?;
             }
             config
         } else {
-            //if config file not found create a empty one
+            //if config file not found create a new one
             let config = Config::build()?;
             config
         };
