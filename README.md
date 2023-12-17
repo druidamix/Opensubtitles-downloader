@@ -7,6 +7,7 @@
 Linux:
 
 ```sh
+*It needs rustc version 1.67 or higher
 git clone https://gitlab.com/marc_ra/opensubtitles-downloader.git
 cd opensubtitles-downloader
 make
