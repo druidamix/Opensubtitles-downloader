@@ -17,7 +17,7 @@ clean:
 	rm -rf target
 
 all:  
-	ifeq (, $(shell command -v tldr 2> /dev/null))
+	ifeq (, $(shell command -v cargo 2> /dev/null))
 		$(error "No cargo command found. Please install cargo.")
 	endif
 	build install
