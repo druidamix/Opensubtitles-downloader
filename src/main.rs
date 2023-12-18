@@ -54,7 +54,9 @@ impl Config {
         std::fs::create_dir_all(config_path.clone())?;
         config_path = config_path.join("osd.conf");
 
+        //Checking if osd.conf exists
         let config = if let Ok(content) = std::fs::read(&config_path) {
+            
             let config: Config = toml::from_str(&String::from_utf8(content)?)?;
 
             if config.user.is_empty()
@@ -471,9 +473,10 @@ fn run(parsed_args: ParsedArgs, config: Config) -> Result<(), Box<dyn Error>> {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args = env::args().collect::<Vec<String>>();
+    //First loading config
+    let config = Config::load_config()?;
     let parsed_args = ParsedArgs::build(&args);
     
-    let config = Config::load_config()?;
     //parse arg to a convenient struct
 
     match run(parsed_args, config) {
