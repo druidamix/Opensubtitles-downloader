@@ -56,7 +56,6 @@ impl Config {
 
         //Checking if osd.conf exists
         let config = if let Ok(content) = std::fs::read(&config_path) {
-            
             let config: Config = toml::from_str(&String::from_utf8(content)?)?;
 
             if config.user.is_empty()
@@ -286,7 +285,6 @@ fn search_for_subtitle_id_key(
 
     // Shows a selection movie list
     if from_gui == true {
-        
         let mut filename_map: HashMap<String, i64> = HashMap::new();
         let mut v_titles: Vec<(String, String)> = Vec::new();
 
@@ -357,8 +355,6 @@ fn login(
     password: &str,
     user_agent: &str,
 ) -> Result<String, Box<dyn Error>> {
-    
-
     let mut headers = HeaderMap::new();
     headers.insert(USER_AGENT, HeaderValue::from_str(user_agent)?);
     headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
@@ -374,7 +370,7 @@ fn login(
     payload.insert("username", user);
     payload.insert("password", password);
     let payload = serde_json::to_string(&payload)?;
-    
+
     let resp = client.post(url).body(payload).headers(headers).send()?;
 
     if resp.status() != reqwest::StatusCode::OK {
@@ -393,7 +389,6 @@ fn download_url(
     key: &str,
     user_agent: &str,
 ) -> Result<String, Box<dyn Error>> {
-    
     let mut headers = HeaderMap::new();
     headers.insert(USER_AGENT, HeaderValue::from_str(user_agent)?);
     headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
@@ -473,10 +468,10 @@ fn run(parsed_args: ParsedArgs, config: Config) -> Result<(), Box<dyn Error>> {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args = env::args().collect::<Vec<String>>();
-    //First loading config
+    //First loading config, because parseargs runs process::exit()
     let config = Config::load_config()?;
     let parsed_args = ParsedArgs::build(&args);
-    
+
     //parse arg to a convenient struct
 
     match run(parsed_args, config) {
