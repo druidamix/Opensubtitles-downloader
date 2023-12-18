@@ -11,6 +11,7 @@ build:
 
 install:
 	cp target/$(target)/$(prog) ~/.local/bin/$(prog)
+	strip ~/.local/bin/$(prog)
 
 uninstall:
 	rm ~/.local/bin/osd
