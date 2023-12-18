@@ -67,7 +67,7 @@ impl Config {
             }
             config
         } else {
-            //if config file not found create a new one
+            //if config file not found create a new one.
             let config = Config::build()?;
             config
         };
@@ -169,7 +169,7 @@ impl Movie {
         }
 
         if !path_movie.is_file() {
-            if path_movie.is_dir(){
+            if path_movie.is_dir() {
                 return Err("The path must point to a file.")?;
             }
             return Err("")?;
@@ -243,8 +243,8 @@ impl Movie {
 
 /// prints help
 fn print_help(opts: Options) {
-   let brief =  "usage: osd [-h] [--gui] movie_file";
-    println!("{}",opts.usage(brief));
+    let brief = "usage: osd [-h] [--gui] movie";
+    println!("{}", opts.usage(brief));
 }
 
 ///Obtains movie id from opensubtitles from hash or movie filename.
@@ -273,6 +273,7 @@ fn search_for_subtitle_id_key(
     let urlwp = reqwest::Url::parse_with_params(URL, params)?;
     let resp = client.get(urlwp).headers(headers).send()?.text()?;
 
+    //to json
     let json: Value = serde_json::from_str(&resp)?;
 
     //If no subtitles found, exit
@@ -283,9 +284,8 @@ fn search_for_subtitle_id_key(
 
     // Shows a selection movie list
     if from_gui == true {
-        //Storing filename with key
+        
         let mut filename_map: HashMap<String, i64> = HashMap::new();
-
         let mut v_titles: Vec<(String, String)> = Vec::new();
 
         let json_array = json["data"].as_array().unwrap();
@@ -305,9 +305,11 @@ fn search_for_subtitle_id_key(
             } else {
                 "".to_string()
             };
+            //saves filename and hash on a tuple vector
             v_titles.push((filename, moviehash));
         }
 
+        //Using zenity to show the subtitles list
         let mut zenity_process = Command::new("zenity");
         zenity_process.args([
             "--width=720",
@@ -326,6 +328,7 @@ fn search_for_subtitle_id_key(
         let out = zenity_process.output()?;
 
         let status_code = out.status.code().unwrap_or(1);
+        //0: movi selected, !=0: cancel button
         if status_code == 1 {
             return Err("Movie not selected.")?;
         } else {
@@ -352,11 +355,7 @@ fn login(
     password: &str,
     user_agent: &str,
 ) -> Result<String, Box<dyn Error>> {
-    let mut payload = HashMap::new();
-    payload.insert("username", user);
-    payload.insert("password", password);
-
-    let payload = serde_json::to_string(&payload)?;
+    
 
     let mut headers = HeaderMap::new();
     headers.insert(USER_AGENT, HeaderValue::from_str(user_agent)?);
@@ -368,10 +367,16 @@ fn login(
     const URL: &str = "https://api.opensubtitles.com/api/v1/login";
     let url = reqwest::Url::parse(URL)?;
     let client = reqwest::blocking::Client::new();
+
+    let mut payload = HashMap::new();
+    payload.insert("username", user);
+    payload.insert("password", password);
+    let payload = serde_json::to_string(&payload)?;
+    
     let resp = client.post(url).body(payload).headers(headers).send()?;
 
     if resp.status() != reqwest::StatusCode::OK {
-        return Err(format!("Bad request: {}, {}", resp.status(),resp.text()?))?;
+        return Err(format!("Bad request: {}, {}", resp.status(), resp.text()?))?;
     }
 
     let resp = resp.text()?;
@@ -386,6 +391,7 @@ fn download_url(
     key: &str,
     user_agent: &str,
 ) -> Result<String, Box<dyn Error>> {
+    
     let mut headers = HeaderMap::new();
     headers.insert(USER_AGENT, HeaderValue::from_str(user_agent)?);
     headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
@@ -420,7 +426,7 @@ fn download_save_file(sub_url: &str, path: &str) -> Result<(), Box<dyn Error>> {
     let mut sub_path = PathBuf::from(path);
     sub_path.set_extension("srt");
 
-    //Remove start end quotes. Why?
+    //Remove start end quotes. Don't know why.
     let p = &sub_url[1..sub_url.len() - 1];
 
     let url = reqwest::Url::parse(p)?;
@@ -430,6 +436,7 @@ fn download_save_file(sub_url: &str, path: &str) -> Result<(), Box<dyn Error>> {
         return Err(format!("Bad request: {}", resp.status()))?;
     }
 
+    //Save the subtitle
     let mut file_path = File::create(sub_path)?;
     io::copy(&mut resp, &mut file_path)?;
 
@@ -464,9 +471,10 @@ fn run(parsed_args: ParsedArgs, config: Config) -> Result<(), Box<dyn Error>> {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args = env::args().collect::<Vec<String>>();
+    let parsed_args = ParsedArgs::build(&args);
+    
     let config = Config::load_config()?;
     //parse arg to a convenient struct
-    let parsed_args = ParsedArgs::build(&args);
 
     match run(parsed_args, config) {
         Ok(_) => eprintln!("Done"),
