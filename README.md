@@ -1,5 +1,5 @@
 # Opensubtitles Downloader (new API) 
-> Download subtitles from opensubtitles.org using the new API.<br>
+> Cli tool for download subtitles from opensubtitles.org using the new API.<br>
 > Primarely it will download subtitles by hash. If none found, it download the first subtitle found.
 
 ## Installation
