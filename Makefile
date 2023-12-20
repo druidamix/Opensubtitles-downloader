@@ -22,4 +22,4 @@ clean:
 all: build install
 
 help:
-	@echo "usage: make install"
+	@echo "usage: make && make install"
