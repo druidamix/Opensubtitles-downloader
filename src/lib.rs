@@ -105,14 +105,65 @@ impl Movie {
         Ok(hash_string)
     }
 }
+/// Obtains opensubtitles id key using zenity list
+fn process_id_key_with_zenity(json_array: &Vec<Value>) -> Result<String, Box<dyn Error>> {
+    let mut filename_map: HashMap<String, i64> = HashMap::new();
+    let mut v_titles: Vec<(String, String)> = Vec::new();
 
+    for n in json_array {
+        let filename = n["attributes"]["files"][0]["file_name"]
+            .as_str()
+            .unwrap_or("")
+            .to_string();
+
+        filename_map.insert(
+            filename.clone(),
+            n["attributes"]["files"][0]["file_id"].as_i64().unwrap_or(0),
+        );
+
+        let moviehash = if n["attributes"]["moviehash_match"] == true {
+            "✅".to_string()
+        } else {
+            "".to_string()
+        };
+        //saves filename and hash on a tuple vector
+        v_titles.push((filename, moviehash));
+    }
+    let mut zenity_process = Command::new("zenity");
+    zenity_process.args([
+        "--width=720",
+        r#"--height=400"#,
+        r#"--list"#,
+        r#"--title=Choose a subtitle"#,
+        "--column=Subtitle",
+        r#"--column=Hash Match"#,
+    ]);
+
+    //Adds to zinnity the column values
+    for n in v_titles {
+        zenity_process.arg(n.0);
+        zenity_process.arg(n.1);
+    }
+    let out = zenity_process.output()?;
+
+    let status_code = out.status.code().unwrap_or(1);
+    //0: movi selected, !=0: cancel button
+    if status_code == 1 {
+        return Err("Movie not selected.")?;
+    } else {
+        let movie_selected = std::str::from_utf8(&out.stdout)?.trim_end_matches('\n');
+        let file_id = filename_map.get(movie_selected);
+        //Returs file_id
+        Ok(file_id.unwrap().to_string())
+    }
+}
 ///Obtains movie id from opensubtitles from hash or movie filename.
 pub fn search_for_subtitle_id_key(
     query: &str,
     hash: &str,
     key: &str,
     language: &str,
-    from_gui: bool,
+    use_gui: bool,
     user_agent: &str,
 ) -> Result<String, Box<dyn Error>> {
     let params = [
@@ -142,58 +193,12 @@ pub fn search_for_subtitle_id_key(
     }
 
     // Shows a selection movie list
-    if from_gui == true {
-        let mut filename_map: HashMap<String, i64> = HashMap::new();
-        let mut v_titles: Vec<(String, String)> = Vec::new();
-
+    if use_gui == true {
         let json_array = json["data"].as_array().unwrap();
-        for n in json_array {
-            let filename = n["attributes"]["files"][0]["file_name"]
-                .as_str()
-                .unwrap_or("")
-                .to_string();
 
-            filename_map.insert(
-                filename.clone(),
-                n["attributes"]["files"][0]["file_id"].as_i64().unwrap_or(0),
-            );
+        let file_id = process_id_key_with_zenity(json_array)?;
 
-            let moviehash = if n["attributes"]["moviehash_match"] == true {
-                "✅".to_string()
-            } else {
-                "".to_string()
-            };
-            //saves filename and hash on a tuple vector
-            v_titles.push((filename, moviehash));
-        }
-
-        //Using zenity to show the subtitles list
-        let mut zenity_process = Command::new("zenity");
-        zenity_process.args([
-            "--width=720",
-            r#"--height=400"#,
-            r#"--list"#,
-            r#"--title=Choose a subtitle"#,
-            "--column=Subtitle",
-            r#"--column=Hash Match"#,
-        ]);
-
-        //Adds to zinnity the column values
-        for n in v_titles {
-            zenity_process.arg(n.0);
-            zenity_process.arg(n.1);
-        }
-        let out = zenity_process.output()?;
-
-        let status_code = out.status.code().unwrap_or(1);
-        //0: movi selected, !=0: cancel button
-        if status_code == 1 {
-            return Err("Movie not selected.")?;
-        } else {
-            let movie_selected = std::str::from_utf8(&out.stdout)?.trim_end_matches('\n');
-            let key = filename_map.get(movie_selected);
-            Ok(key.unwrap().to_string())
-        }
+        Ok(file_id)
     } else {
         //Looks for a hash match
         for n in json.get("data").iter() {
