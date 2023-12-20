@@ -1,5 +1,4 @@
 use getopts::Options;
-use osd;
 use osd::download_save_file;
 use osd::download_url;
 use osd::login;
