@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::io::{self, Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
+use std::process::Stdio;
 use std::{env, mem};
 use std::{fs::File, process::Command};
 
@@ -105,6 +106,60 @@ impl Movie {
         Ok(hash_string)
     }
 }
+
+fn process_id_key_with_kdialog(json_array: &Vec<Value>) -> Result<String, Box<dyn Error>> {
+    let mut filename_map: HashMap<String, i64> = HashMap::new();
+    let mut v_titles: Vec<(String, String, String)> = Vec::new();
+
+    for (index, n) in json_array.iter().enumerate() {
+        let filename = n["attributes"]["files"][0]["file_name"]
+            .as_str()
+            .unwrap_or("")
+            .to_string();
+
+        filename_map.insert(
+            index.to_string(),
+            n["attributes"]["files"][0]["file_id"].as_i64().unwrap_or(0),
+        );
+
+        let movieitem = if n["attributes"]["moviehash_match"] == true {
+            (
+                index.to_string(),
+                format!("{} {}", filename, "✅"),
+                "off".to_string(),
+            )
+        } else {
+            (index.to_string(), filename, "off".to_string())
+        };
+        //saves filename and hash on a tuple vector
+        v_titles.push(movieitem);
+    }
+
+    let mut zenity_process = Command::new("kdialog");
+    zenity_process
+        .args(["--geometry", "800x400", "--radiolist", "Select subtitle"])
+        .stdout(Stdio::piped());
+
+    //Adds to zinnity the column values
+    for n in v_titles {
+        zenity_process.arg(n.0);
+        zenity_process.arg(n.1);
+        zenity_process.arg(n.2);
+    }
+    let out = zenity_process.output()?;
+
+    let status_code = out.status.success();
+    //0: movi selected, !=0: cancel button
+    if status_code == false {
+        return Err("Movie not selected.")?;
+    } else {
+        let movie_selected = std::str::from_utf8(&out.stdout)?.trim_end_matches('\n');
+        let file_id = filename_map.get(movie_selected);
+        //Returs file_id
+        Ok(file_id.unwrap().to_string())
+    }
+}
+
 /// Obtains opensubtitles id key using zenity list
 fn process_id_key_with_zenity(json_array: &Vec<Value>) -> Result<String, Box<dyn Error>> {
     let mut filename_map: HashMap<String, i64> = HashMap::new();
@@ -164,6 +219,7 @@ pub fn search_for_subtitle_id_key(
     key: &str,
     language: &str,
     use_gui: bool,
+    gui_mode: &str,
     user_agent: &str,
 ) -> Result<String, Box<dyn Error>> {
     let params = [
@@ -196,7 +252,11 @@ pub fn search_for_subtitle_id_key(
     if use_gui == true {
         let json_array = json["data"].as_array().unwrap();
 
-        let file_id = process_id_key_with_zenity(json_array)?;
+        let file_id = if gui_mode == "gtk" {
+            process_id_key_with_zenity(json_array)?
+        } else {
+            process_id_key_with_kdialog(json_array)?
+        };
 
         Ok(file_id)
     } else {

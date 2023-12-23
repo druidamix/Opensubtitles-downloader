@@ -89,6 +89,7 @@ impl Config {
 ///Parsed arguments properties
 struct ParsedArgs {
     use_gui: bool,
+    gui_mode: String,
     path: String,
 }
 
@@ -116,9 +117,27 @@ impl ParsedArgs {
             std::process::exit(1);
         };
 
-        let mut opt_gui = false;
+        let mut use_gui = false;
+        let mut gui_mode = Default::default();
         if matches.opt_present("g") {
-            opt_gui = true;
+            use_gui = true;
+
+            //Detect desktop mode
+            let desktop = match env::var_os("XDG_CURRENT_DESKTOP") {
+                Some(desktop) => desktop.into_string().unwrap(),
+                None => "gtk".to_string(),
+            };
+
+            gui_mode = if [
+                "Cinnamon", "GNOME", "XFCE", "xfce4", "bspwm", "gnome", "gtk",
+            ]
+            .contains(&desktop.as_str())
+            {
+                "gtk".to_string()
+            } else {
+                "qt".to_string()
+            };
+
         }
 
         let free_args = matches.free.len();
@@ -127,10 +146,11 @@ impl ParsedArgs {
             print_help(opts);
             std::process::exit(0);
         }
-
+        
         //Returns struct of ParsedArgs
         return ParsedArgs {
-            use_gui: opt_gui,
+            use_gui,
+            gui_mode,
             path: matches.free.first().unwrap().to_string(),
         };
     }
@@ -152,6 +172,7 @@ fn run(parsed_args: ParsedArgs, config: Config) -> Result<(), Box<dyn Error>> {
         &config.key,
         &config.language,
         parsed_args.use_gui,
+        &parsed_args.gui_mode,
         &config.useragent,
     )?;
 

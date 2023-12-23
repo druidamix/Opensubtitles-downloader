@@ -31,7 +31,8 @@ example: osd lord_of_the_rings.mp4
 Add --gui as parameter to choose which subtitle to download. (zenity)
 
 ## Release History
-
+* 0.1.2
+    * Autodetect gtk or qt, so zennity or kdialog will be used
 * 0.1.1
     * Added user agent as parameter on osd.conf
 * 0.1.0
