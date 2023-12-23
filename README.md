@@ -28,7 +28,7 @@ usage: osd [-h] [--gui] movie_file
 
 example: osd lord_of_the_rings.mp4
 
-Add --gui as parameter to choose which subtitle to download. (zenity)
+Add --gui as parameter to choose which subtitle to download. (zenity or kdialog)
 
 ## Release History
 * 0.1.2
