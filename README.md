@@ -40,7 +40,7 @@ Add --gui as parameter to choose which subtitle to download. (zenity or kdialog)
 
 ## Meta
 
-Your Name – Marc Rates, druidamix@gmail.com
+Your Name – Marc Ratés, druidamix@gmail.com
 
 Distributed under the GPL 2.0 license. See ``LICENSE`` for more information.
 
