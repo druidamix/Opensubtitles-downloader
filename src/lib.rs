@@ -25,14 +25,13 @@ impl Movie {
             return Err("File not found.")?;
         }
 
-        let path_movie;
         //concatenates the movie path
-        if Path::new(path).has_root() {
-            path_movie = Path::new(path).to_path_buf();
+        let path_movie = if Path::new(path).has_root() {
+            Path::new(path).to_path_buf()
         } else {
             let curren_dir = env::current_dir().unwrap();
-            path_movie = Path::new(&curren_dir).join(path);
-        }
+            Path::new(&curren_dir).join(path)
+        };
 
         if !path_movie.is_file() {
             if path_movie.is_dir() {
@@ -84,7 +83,7 @@ impl Movie {
         let mut reader = std::io::BufReader::with_capacity(HASH_BLK_SIZE as usize, file);
 
         for _ in 0..iterations {
-            reader.read(&mut buf)?;
+            reader.read_exact(&mut buf)?;
             unsafe {
                 word = mem::transmute(buf);
             };
@@ -94,7 +93,7 @@ impl Movie {
         reader.seek(SeekFrom::Start(fsize - HASH_BLK_SIZE))?;
 
         for _ in 0..iterations {
-            reader.read(&mut buf)?;
+            reader.read_exact(&mut buf)?;
             unsafe {
                 word = mem::transmute(buf);
             };
@@ -107,7 +106,7 @@ impl Movie {
     }
 }
 
-fn process_id_key_with_kdialog(json_array: &Vec<Value>) -> Result<String, Box<dyn Error>> {
+fn process_id_key_with_kdialog(json_array: &[Value]) -> Result<String, Box<dyn Error>> {
     let mut filename_map: HashMap<String, i64> = HashMap::new();
     let mut v_titles: Vec<(String, String, String)> = Vec::new();
 
@@ -150,8 +149,8 @@ fn process_id_key_with_kdialog(json_array: &Vec<Value>) -> Result<String, Box<dy
 
     let status_code = out.status.success();
     //0: movi selected, !=0: cancel button
-    if status_code == false {
-        return Err("Movie not selected.")?;
+    if !status_code {
+        Err("Movie not selected.")?
     } else {
         let movie_selected = std::str::from_utf8(&out.stdout)?.trim_end_matches('\n');
         let file_id = filename_map.get(movie_selected);
@@ -204,7 +203,7 @@ fn process_id_key_with_zenity(json_array: &Vec<Value>) -> Result<String, Box<dyn
     let status_code = out.status.code().unwrap_or(1);
     //0: movi selected, !=0: cancel button
     if status_code == 1 {
-        return Err("Movie not selected.")?;
+        Err("Movie not selected.")?
     } else {
         let movie_selected = std::str::from_utf8(&out.stdout)?.trim_end_matches('\n');
         let file_id = filename_map.get(movie_selected);
@@ -222,7 +221,6 @@ pub fn search_for_subtitle_id_key(
     gui_mode: &str,
     user_agent: &str,
 ) -> Result<String, Box<dyn Error>> {
-
     let params = [
         ("languages", language),
         ("query", query),
@@ -232,12 +230,12 @@ pub fn search_for_subtitle_id_key(
     //makes a request
     const URL: &str = "https://api.opensubtitles.com/api/v1/subtitles";
     let urlwp = reqwest::Url::parse_with_params(URL, params)?;
-    
+
     let mut headers = HeaderMap::new();
     headers.insert(USER_AGENT, HeaderValue::from_str(user_agent)?);
     headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
     headers.insert("Api-Key", HeaderValue::from_str(key)?);
-    
+
     let client = reqwest::blocking::Client::new();
     let resp = client.get(urlwp).headers(headers).send()?.text()?;
 
@@ -247,11 +245,11 @@ pub fn search_for_subtitle_id_key(
     //If no subtitles found, exit
     let total_count = json["total_count"].as_i64().unwrap_or(0);
     if total_count < 1 {
-        return Err("No subtitles found.")?;
+        Err("No subtitles found.")?
     }
 
     // Shows a selection movie list
-    if use_gui == true {
+    if use_gui {
         let json_array = json["data"].as_array().unwrap();
 
         let file_id = if gui_mode == "gtk" {
@@ -299,7 +297,7 @@ pub fn login(
     let resp = client.post(url).body(payload).headers(headers).send()?;
 
     if resp.status() != reqwest::StatusCode::OK {
-        return Err(format!("Bad request: {}, {}", resp.status(), resp.text()?))?;
+        return Err(format!("Bad request: {}, {}", resp.status(), resp.text()?))?
     }
 
     let resp = resp.text()?;
@@ -344,7 +342,7 @@ pub fn download_url(
     Ok(rej["link"].as_str().unwrap_or_default().to_string())
 }
 
-pub fn download_save_file(sub_url: &str, path: &str) -> Result<(),Box<dyn Error>> {
+pub fn download_save_file(sub_url: &str, path: &str) -> Result<(), Box<dyn Error>> {
     let mut sub_path = PathBuf::from(path);
     sub_path.set_extension("srt");
 
@@ -352,7 +350,7 @@ pub fn download_save_file(sub_url: &str, path: &str) -> Result<(),Box<dyn Error>
     let mut resp = reqwest::blocking::get(url)?;
 
     if resp.status() != reqwest::StatusCode::OK {
-        return Err(format!("Bad request: {}", resp.status()))?;
+        Err(format!("Bad request: {}", resp.status()))?;
     }
 
     //Save the subtitle

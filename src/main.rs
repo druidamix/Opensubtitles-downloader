@@ -62,8 +62,7 @@ impl Config {
             config
         } else {
             //if config file not found create a new one.
-            let config = Config::build()?;
-            config
+            Config::build()?
         };
 
         Ok(config)
@@ -159,7 +158,7 @@ impl ParsedArgs {
 
 /// prints help
 fn print_help(opts: Options) {
-    let brief = "usage: osd [-h] [--gui] movie";
+    let brief = "usage: osd [-h] [-g] movie";
     println!("{}", opts.usage(brief));
 }
 
