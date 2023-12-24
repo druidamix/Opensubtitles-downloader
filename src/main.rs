@@ -98,7 +98,7 @@ impl ParsedArgs {
     fn build(args: &[String]) -> ParsedArgs {
         // -- parse arguments
         let mut opts = Options::new();
-        opts.optflag("g", "gui", "Choose subtitle from a list");
+        opts.optflag("g", "gui", "Choose subtitle from a dialog list");
         opts.optflag("h", "help", "Prints this help");
 
         //Checks for unrecognized options
@@ -119,6 +119,7 @@ impl ParsedArgs {
 
         let mut use_gui = false;
         let mut gui_mode = Default::default();
+        
         if matches.opt_present("g") {
             use_gui = true;
 
@@ -191,7 +192,7 @@ fn run(parsed_args: ParsedArgs, config: Config) -> Result<(), Box<dyn Error>> {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args = env::args().collect::<Vec<String>>();
-    //First loading config, because parseargs runs process::exit()
+    //First loading config, because parseargs calls process::exit()
     let config = Config::load_config()?;
     let parsed_args = ParsedArgs::build(&args);
 

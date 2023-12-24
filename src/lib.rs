@@ -222,21 +222,23 @@ pub fn search_for_subtitle_id_key(
     gui_mode: &str,
     user_agent: &str,
 ) -> Result<String, Box<dyn Error>> {
+
     let params = [
         ("languages", language),
         ("query", query),
         ("moviehash", hash),
     ];
 
+    //makes a request
+    const URL: &str = "https://api.opensubtitles.com/api/v1/subtitles";
+    let urlwp = reqwest::Url::parse_with_params(URL, params)?;
+    
     let mut headers = HeaderMap::new();
     headers.insert(USER_AGENT, HeaderValue::from_str(user_agent)?);
     headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
     headers.insert("Api-Key", HeaderValue::from_str(key)?);
-
-    //makes a request
-    const URL: &str = "https://api.opensubtitles.com/api/v1/subtitles";
+    
     let client = reqwest::blocking::Client::new();
-    let urlwp = reqwest::Url::parse_with_params(URL, params)?;
     let resp = client.get(urlwp).headers(headers).send()?.text()?;
 
     //to json
@@ -287,13 +289,13 @@ pub fn login(
     //makes a request
     const URL: &str = "https://api.opensubtitles.com/api/v1/login";
     let url = reqwest::Url::parse(URL)?;
-    let client = reqwest::blocking::Client::new();
 
     let mut payload = HashMap::new();
     payload.insert("username", user);
     payload.insert("password", password);
     let payload = serde_json::to_string(&payload)?;
 
+    let client = reqwest::blocking::Client::new();
     let resp = client.post(url).body(payload).headers(headers).send()?;
 
     if resp.status() != reqwest::StatusCode::OK {
@@ -339,17 +341,14 @@ pub fn download_url(
         .text()?;
 
     let rej: Value = serde_json::from_str(&resp)?;
-    Ok(rej["link"].to_string())
+    Ok(rej["link"].as_str().unwrap_or_default().to_string())
 }
 
-pub fn download_save_file(sub_url: &str, path: &str) -> Result<(), Box<dyn Error>> {
+pub fn download_save_file(sub_url: &str, path: &str) -> Result<(),Box<dyn Error>> {
     let mut sub_path = PathBuf::from(path);
     sub_path.set_extension("srt");
 
-    //Remove start end quotes. Don't know why.
-    let p = &sub_url[1..sub_url.len() - 1];
-
-    let url = reqwest::Url::parse(p)?;
+    let url = reqwest::Url::parse(sub_url)?;
     let mut resp = reqwest::blocking::get(url)?;
 
     if resp.status() != reqwest::StatusCode::OK {
