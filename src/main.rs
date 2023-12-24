@@ -120,7 +120,7 @@ impl ParsedArgs {
             std::process::exit(1);
         };
 
-        let verbose =  matches.opt_present("v");
+        let verbose = matches.opt_present("v");
 
         let mut use_gui = false;
         let mut gui_mode = Default::default();
@@ -157,7 +157,7 @@ impl ParsedArgs {
             use_gui,
             gui_mode,
             path: matches.free.first().unwrap().to_string(),
-            verbose
+            verbose,
         };
     }
 }
@@ -188,11 +188,15 @@ fn run(parsed_args: ParsedArgs, config: Config) -> Result<(), Box<dyn Error>> {
         &config.password,
         &config.useragent,
     )?;
-    println!("Login token: {}",token);
+    
+    if parsed_args.verbose {
+        println!("Login token: {}", token);
+    }
+    
     // download suitable subtitle
     let url: Url = download_url(&file_id, &token, &config.key, &config.useragent)?;
-    
-    if parsed_args.verbose{
+
+    if parsed_args.verbose {
         println!("Remaining requests for the day: {}", url.remaining);
         println!("Requests reset time: {}", url.reset_time);
     }
