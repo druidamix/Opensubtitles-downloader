@@ -1,5 +1,5 @@
 use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE, USER_AGENT};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_json::Value;
 use std::collections::HashMap;
 use std::error::Error;
@@ -38,7 +38,7 @@ impl Movie {
             if path_movie.is_dir() {
                 return Err("The path must point to a file.")?;
             }
-            return Err("")?;
+            return Err("Unrecognizable path.")?;
         }
 
         //Getting movie filename from path
@@ -208,8 +208,13 @@ fn process_id_key_with_zenity(json_array: &Vec<Value>) -> Result<String, Box<dyn
     } else {
         let movie_selected = std::str::from_utf8(&out.stdout)?.trim_end_matches('\n');
         let file_id = filename_map.get(movie_selected);
-        //Returs file_id
-        Ok(file_id.unwrap().to_string())
+
+        if file_id.is_none() {
+            Err("Error selecting movie")?
+        } else {
+            //Returs file_id
+            Ok(file_id.unwrap().to_string())
+        }
     }
 }
 ///Obtains movie id from opensubtitles from hash or movie filename.
@@ -252,7 +257,6 @@ pub fn search_for_subtitle_id_key(
     // Shows a selection movie list
     if use_gui {
         let json_array = json["data"].as_array().unwrap();
-
         let file_id = if gui_mode == "gtk" {
             process_id_key_with_zenity(json_array)?
         } else {
@@ -298,21 +302,22 @@ pub fn login(
     let resp = client.post(url).body(payload).headers(headers).send()?;
 
     if resp.status() != reqwest::StatusCode::OK {
-        return Err(format!("Bad request: {}, {}", resp.status(), resp.text()?))?
+        return Err(format!("Bad request: {}, {}", resp.status(), resp.text()?))?;
     }
 
     let resp = resp.text()?;
     let rej: Value = serde_json::from_str(&resp)?;
     Ok(rej["token"].to_string())
 }
-#[derive(Debug, Deserialize, Serialize)]
-pub struct Url{
+
+#[derive(Debug, Deserialize)]
+pub struct Url {
     pub link: String,
     pub requests: u16,
     pub remaining: u16,
     pub message: String,
     pub reset_time: String,
-    pub reset_time_utc: String
+    pub reset_time_utc: String,
 }
 
 ///Request a download url for a subtitle.
@@ -349,7 +354,7 @@ pub fn download_url(
         .text()?;
 
     let url: Url = serde_json::from_str(&resp)?;
-    
+
     Ok(url)
 }
 
@@ -364,7 +369,7 @@ pub fn download_save_file(sub_url: &str, path: &str) -> Result<(), Box<dyn Error
         Err(format!("Bad request: {}", resp.status()))?;
     }
 
-    //Save the subtitle
+    //Save the subtitle to disk
     let mut file_path = File::create(sub_path)?;
     io::copy(&mut resp, &mut file_path)?;
 
