@@ -4,10 +4,12 @@ use osd::download_url;
 use osd::login;
 use osd::search_for_subtitle_id_key;
 use osd::Movie;
+use osd::Url;
 use serde::Deserialize;
 use serde::Serialize;
 use std::env;
 use std::error::Error;
+use std::process;
 
 //fn _type_of<T>(_: &T) {
 //    println!("{}", std::any::type_name::<T>())
@@ -90,6 +92,7 @@ struct ParsedArgs {
     use_gui: bool,
     gui_mode: String,
     path: String,
+    verbose: bool,
 }
 
 impl ParsedArgs {
@@ -99,6 +102,7 @@ impl ParsedArgs {
         let mut opts = Options::new();
         opts.optflag("g", "gui", "Choose subtitle from a dialog list");
         opts.optflag("h", "help", "Prints this help");
+        opts.optflag("v", "verbose", "Prints more information");
 
         //Checks for unrecognized options
         let matches = match opts.parse(&args[1..]) {
@@ -116,9 +120,11 @@ impl ParsedArgs {
             std::process::exit(1);
         };
 
+        let verbose =  matches.opt_present("v");
+
         let mut use_gui = false;
         let mut gui_mode = Default::default();
-        
+
         if matches.opt_present("g") {
             use_gui = true;
 
@@ -137,7 +143,6 @@ impl ParsedArgs {
             } else {
                 "qt".to_string()
             };
-
         }
 
         let free_args = matches.free.len();
@@ -146,19 +151,20 @@ impl ParsedArgs {
             print_help(opts);
             std::process::exit(0);
         }
-        
+
         //Returns struct of ParsedArgs
         return ParsedArgs {
             use_gui,
             gui_mode,
             path: matches.free.first().unwrap().to_string(),
+            verbose
         };
     }
 }
 
 /// prints help
 fn print_help(opts: Options) {
-    let brief = "usage: osd [-h] [-g] movie";
+    let brief = "usage: osd [-h] [-g] [-v] movie";
     println!("{}", opts.usage(brief));
 }
 
@@ -182,9 +188,16 @@ fn run(parsed_args: ParsedArgs, config: Config) -> Result<(), Box<dyn Error>> {
         &config.password,
         &config.useragent,
     )?;
+    println!("Login token: {}",token);
     // download suitable subtitle
-    let sub_url = download_url(&file_id, &token, &config.key, &config.useragent)?;
-    download_save_file(&sub_url, &movie.path)?;
+    let url: Url = download_url(&file_id, &token, &config.key, &config.useragent)?;
+    
+    if parsed_args.verbose{
+        println!("Remaining requests for the day: {}", url.remaining);
+        println!("Requests reset time: {}", url.reset_time);
+    }
+
+    download_save_file(&url.link, &movie.path)?;
 
     Ok(())
 }
@@ -198,7 +211,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     //parse arg to a convenient struct
 
     match run(parsed_args, config) {
-        Ok(_) => eprintln!("Done"),
+        Ok(_) => process::exit(0),
         Err(e) => {
             if let Some(err) = e.downcast_ref::<reqwest::Error>() {
                 eprintln!("Request Error: {}", err);

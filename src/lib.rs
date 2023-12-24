@@ -1,4 +1,5 @@
 use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE, USER_AGENT};
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 use std::error::Error;
@@ -304,6 +305,15 @@ pub fn login(
     let rej: Value = serde_json::from_str(&resp)?;
     Ok(rej["token"].to_string())
 }
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Url{
+    pub link: String,
+    pub requests: u16,
+    pub remaining: u16,
+    pub message: String,
+    pub reset_time: String,
+    pub reset_time_utc: String
+}
 
 ///Request a download url for a subtitle.
 pub fn download_url(
@@ -311,7 +321,7 @@ pub fn download_url(
     token: &str,
     key: &str,
     user_agent: &str,
-) -> Result<String, Box<dyn Error>> {
+) -> Result<Url, Box<dyn Error>> {
     let mut headers = HeaderMap::new();
     headers.insert(USER_AGENT, HeaderValue::from_str(user_agent)?);
     headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
@@ -338,8 +348,9 @@ pub fn download_url(
         .send()?
         .text()?;
 
-    let rej: Value = serde_json::from_str(&resp)?;
-    Ok(rej["link"].as_str().unwrap_or_default().to_string())
+    let url: Url = serde_json::from_str(&resp)?;
+    
+    Ok(url)
 }
 
 pub fn download_save_file(sub_url: &str, path: &str) -> Result<(), Box<dyn Error>> {
