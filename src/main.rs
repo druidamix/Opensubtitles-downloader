@@ -26,6 +26,7 @@ struct Config {
 
 //Manages osd.conf file
 impl Config {
+    //Creates new config osd.conf file
     fn build() -> Result<Config, Box<dyn Error>> {
         let config = Config {
             key: "".to_owned(),
@@ -207,12 +208,10 @@ fn run(parsed_args: ParsedArgs, config: Config) -> Result<(), Box<dyn Error>> {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let args = env::args().collect::<Vec<String>>();
     //First loading config, because parseargs calls process::exit()
     let config = Config::load_config()?;
+    let args = env::args().collect::<Vec<String>>();
     let parsed_args = ParsedArgs::build(&args);
-
-    //parse arg to a convenient struct
 
     match run(parsed_args, config) {
         Ok(_) => process::exit(0),

@@ -209,11 +209,11 @@ fn process_id_key_with_zenity(json_array: &Vec<Value>) -> Result<String, Box<dyn
         let movie_selected = std::str::from_utf8(&out.stdout)?.trim_end_matches('\n');
         let file_id = filename_map.get(movie_selected);
 
-        if file_id.is_none() {
-            Err("Error selecting movie")?
-        } else {
+        if let Some(value) = file_id {
             //Returs file_id
-            Ok(file_id.unwrap().to_string())
+            Ok(value.to_string())
+        } else {
+            Err("Error selecting movie")?
         }
     }
 }
