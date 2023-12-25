@@ -227,7 +227,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             if let Some(err) = e.downcast_ref::<reqwest::Error>() {
                 eprintln!("Request Error: {}", err);
             } else {
-                eprintln!("{}", e);
+                eprintln!("Error: {}", e);
             }
         }
     }

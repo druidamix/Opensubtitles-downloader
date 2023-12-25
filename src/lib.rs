@@ -135,20 +135,25 @@ fn process_id_key_with_kdialog(json_array: &[Value]) -> Result<String, Box<dyn E
         v_titles.push(movieitem);
     }
 
-    let mut zenity_process = Command::new("kdialog");
-    zenity_process
+    let mut kdialog_process = Command::new("kdialog");
+    kdialog_process
         .args(["--geometry", "800x400", "--radiolist", "Select subtitle"])
         .stdout(Stdio::piped());
 
     //Adds to zinnity the column values
     for n in v_titles {
-        zenity_process.arg(n.0);
-        zenity_process.arg(n.1);
-        zenity_process.arg(n.2);
+        kdialog_process.arg(n.0);
+        kdialog_process.arg(n.1);
+        kdialog_process.arg(n.2);
     }
-    let out = zenity_process.output()?;
+    
+    let out = match kdialog_process.output(){
+        Ok(out) => out,
+        Err(_) => Err("Kdialog not found.")?,
+    };
 
     let status_code = out.status.success();
+    print!("Status code: {}", status_code);
     //0: movi selected, !=0: cancel button
     if !status_code {
         Err("Movie not selected.")?
@@ -199,8 +204,12 @@ fn process_id_key_with_zenity(json_array: &Vec<Value>) -> Result<String, Box<dyn
         zenity_process.arg(n.0);
         zenity_process.arg(n.1);
     }
-    let out = zenity_process.output()?;
 
+    let out = match zenity_process.output(){
+        Ok(out) => out,
+        Err(_) => Err("Zenity not found.")?,
+    };
+    
     let status_code = out.status.code().unwrap_or(1);
     //0: movi selected, !=0: cancel button
     if status_code == 1 {
