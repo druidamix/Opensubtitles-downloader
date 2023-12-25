@@ -200,6 +200,10 @@ fn run(parsed_args: ParsedArgs, config: Config) -> Result<(), Box<dyn Error>> {
     
     // download suitable subtitle
     let url: Url = download_url(&file_id, &token, &config.key, &config.useragent)?;
+    
+    if parsed_args.verbose{
+        println!("Subtitle to be downloaded: {}", url.link);
+    }
 
     if parsed_args.verbose {
         println!("Remaining requests for the day: {}", url.remaining);
