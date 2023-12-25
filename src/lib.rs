@@ -243,10 +243,14 @@ pub fn search_for_subtitle_id_key(
     headers.insert("Api-Key", HeaderValue::from_str(key)?);
 
     let client = reqwest::blocking::Client::new();
-    let resp = client.get(urlwp).headers(headers).send()?.text()?;
+    let resp = client.get(urlwp).headers(headers).send()?;
+
+    if resp.status() != reqwest::StatusCode::OK {
+        return Err(format!("Bad request: {}, {}", resp.status(), resp.text()?))?;
+    }
 
     //to json
-    let json: Value = serde_json::from_str(&resp)?;
+    let json: Value = serde_json::from_str(&resp.text()?)?;
 
     //If no subtitles found, exit
     let total_count = json["total_count"].as_i64().unwrap_or(0);
@@ -350,10 +354,13 @@ pub fn download_url(
         .post(urlwp)
         .body(payload)
         .headers(headers)
-        .send()?
-        .text()?;
+        .send()?;
 
-    let url: Url = serde_json::from_str(&resp)?;
+    if resp.status() != reqwest::StatusCode::OK {
+        return Err(format!("Bad request: {}, {}", resp.status(), resp.text()?))?;
+    }
+    
+    let url: Url = serde_json::from_str(&resp.text()?)?;
 
     Ok(url)
 }

@@ -173,6 +173,10 @@ fn run(parsed_args: ParsedArgs, config: Config) -> Result<(), Box<dyn Error>> {
     //Gets movie properties
     let movie = Movie::build(&parsed_args.path)?;
 
+    if parsed_args.verbose{
+        println!("Using api key: {}",config.key);
+    }
+    
     let file_id = search_for_subtitle_id_key(
         &movie.title,
         &movie.hash,
