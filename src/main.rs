@@ -52,16 +52,19 @@ impl Config {
 
         //Checking if osd.conf exists
         let config = if let Ok(content) = std::fs::read(&config_path) {
-            let config: Config = toml::from_str(&String::from_utf8(content)?)?;
+            let config: Config = match toml::from_str(&String::from_utf8(content)?){
+                Ok(config) => config,
+                Err(e) => Err(format!("Error reading config file: {}",e.message()))?,
+            };
 
-            if config.user.is_empty()
-                || config.key.is_empty()
-                || config.password.is_empty()
-                || config.language.is_empty()
-                || config.useragent.is_empty()
-            {
-                return Err("Config file osd.conf fields cannot be empty.")?;
-            }
+            // if config.user.is_empty()
+            //     || config.key.is_empty()
+            //     || config.password.is_empty()
+            //     || config.language.is_empty()
+            //     || config.useragent.is_empty()
+            // {
+            //     return Err("Config file osd.conf fields cannot be empty.")?;
+            // }
             config
         } else {
             //if config file not found create a new one.
@@ -173,10 +176,10 @@ fn run(parsed_args: ParsedArgs, config: Config) -> Result<(), Box<dyn Error>> {
     //Gets movie properties
     let movie = Movie::build(&parsed_args.path)?;
 
-    if parsed_args.verbose{
-        println!("Using api key: {}",config.key);
+    if parsed_args.verbose {
+        println!("Using api key: {}", config.key);
     }
-    
+
     let file_id = search_for_subtitle_id_key(
         &movie.title,
         &movie.hash,
@@ -193,15 +196,15 @@ fn run(parsed_args: ParsedArgs, config: Config) -> Result<(), Box<dyn Error>> {
         &config.password,
         &config.useragent,
     )?;
-    
+
     if parsed_args.verbose {
         println!("Login token: {}", token);
     }
-    
+
     // download suitable subtitle
     let url: Url = download_url(&file_id, &token, &config.key, &config.useragent)?;
-    
-    if parsed_args.verbose{
+
+    if parsed_args.verbose {
         println!("Subtitle to be downloaded: {}", url.link);
     }
 
@@ -227,7 +230,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             if let Some(err) = e.downcast_ref::<reqwest::Error>() {
                 eprintln!("Request Error: {}", err);
             } else {
-                eprintln!("Error: {}", e);
+                eprintln!("{}", e);
             }
         }
     }
