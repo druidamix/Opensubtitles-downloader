@@ -1,4 +1,9 @@
 [package]
+authors= ["Marc Ratés"]
+description = "Cli tool for downloading subtitles from opensubtitles.org using the new API"
+homepage = "https://gitlab.com/marc_ra/opensubtitles-downloader"
+repository = "https://gitlab.com/marc_ra/opensubtitles-downloader"
+license = "GPL"
 name = "osd"
 version = "0.1.3"
 edition = "2021"
