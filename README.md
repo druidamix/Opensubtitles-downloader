@@ -34,6 +34,8 @@ example: osd lord_of_the_rings.mp4
 Add --gui as parameter to choose which subtitle to download. (zenity or kdialog)
 
 ## Release History
+* 0.1.7
+    * Show movie file name on title dialog
 * 0.1.3 
     * Added verbose  
 * 0.1.2
