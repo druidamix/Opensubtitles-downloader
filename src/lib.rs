@@ -27,7 +27,7 @@ impl Movie {
         }
 
         //concatenates the movie path
-        let path_movie = if Path::new(path).has_root() {
+        let mut path_movie = if Path::new(path).has_root() {
             Path::new(path).to_path_buf()
         } else {
             let curren_dir = env::current_dir().unwrap();
@@ -41,6 +41,12 @@ impl Movie {
             return Err("Unrecognizable path.")?;
         }
 
+        //Path to String
+        let path = path_movie.to_str().unwrap_or_default().to_owned();
+
+        //Remove extension
+        path_movie.set_extension("");
+
         //Getting movie filename from path
         let movie_title = path_movie
             .file_name()
@@ -48,15 +54,12 @@ impl Movie {
             .to_string_lossy()
             .to_string();
 
-        //Path to String
-        let path_movie = path_movie.to_str().unwrap_or_default().to_owned();
-
         //hash used by opensubtitles
-        let hash = Movie::create_hash(&path_movie)?;
+        let hash = Movie::create_hash(&path)?;
 
         //Returns movie struct
         Ok(Movie {
-            path: path_movie,
+            path,
             title: movie_title,
             hash,
         })
@@ -107,7 +110,10 @@ impl Movie {
     }
 }
 
-fn process_id_key_with_kdialog(json_array: &[Value]) -> Result<String, Box<dyn Error>> {
+fn process_id_key_with_kdialog(
+    json_array: &[Value],
+    movie_filename: &str,
+) -> Result<String, Box<dyn Error>> {
     let mut filename_map: HashMap<String, i64> = HashMap::new();
     let mut v_titles: Vec<(String, String, String)> = Vec::new();
 
@@ -137,7 +143,14 @@ fn process_id_key_with_kdialog(json_array: &[Value]) -> Result<String, Box<dyn E
 
     let mut kdialog_process = Command::new("kdialog");
     kdialog_process
-        .args(["--geometry", "800x400", "--radiolist", "Select subtitle"])
+        .args([
+            "--geometry",
+            "800x400",
+            "--radiolist",
+            "Select subtitle",
+            "--title",
+            movie_filename,
+        ])
         .stdout(Stdio::piped());
 
     //Adds to zinnity the column values
@@ -146,8 +159,8 @@ fn process_id_key_with_kdialog(json_array: &[Value]) -> Result<String, Box<dyn E
         kdialog_process.arg(n.1);
         kdialog_process.arg(n.2);
     }
-    
-    let out = match kdialog_process.output(){
+
+    let out = match kdialog_process.output() {
         Ok(out) => out,
         Err(_) => Err("Kdialog not found.")?,
     };
@@ -166,7 +179,10 @@ fn process_id_key_with_kdialog(json_array: &[Value]) -> Result<String, Box<dyn E
 }
 
 /// Obtains opensubtitles id key using zenity list
-fn process_id_key_with_zenity(json_array: &Vec<Value>) -> Result<String, Box<dyn Error>> {
+fn process_id_key_with_zenity(
+    json_array: &Vec<Value>,
+    movie_filename: &str,
+) -> Result<String, Box<dyn Error>> {
     let mut filename_map: HashMap<String, i64> = HashMap::new();
     let mut v_titles: Vec<(String, String)> = Vec::new();
 
@@ -194,7 +210,7 @@ fn process_id_key_with_zenity(json_array: &Vec<Value>) -> Result<String, Box<dyn
         "--width=720",
         r#"--height=400"#,
         r#"--list"#,
-        r#"--title=Choose a subtitle"#,
+        format!("--title={}", movie_filename).as_str(),
         "--column=Subtitle",
         r#"--column=Hash Match"#,
     ]);
@@ -205,11 +221,11 @@ fn process_id_key_with_zenity(json_array: &Vec<Value>) -> Result<String, Box<dyn
         zenity_process.arg(n.1);
     }
 
-    let out = match zenity_process.output(){
+    let out = match zenity_process.output() {
         Ok(out) => out,
         Err(_) => Err("Zenity not found.")?,
     };
-    
+
     let status_code = out.status.code().unwrap_or(1);
     //0: movi selected, !=0: cancel button
     if status_code == 1 {
@@ -228,7 +244,7 @@ fn process_id_key_with_zenity(json_array: &Vec<Value>) -> Result<String, Box<dyn
 }
 ///Obtains movie id from opensubtitles from hash or movie filename.
 pub fn search_for_subtitle_id_key(
-    query: &str,
+    movie_filename: &str,
     hash: &str,
     key: &str,
     language: &str,
@@ -238,7 +254,7 @@ pub fn search_for_subtitle_id_key(
 ) -> Result<String, Box<dyn Error>> {
     let params = [
         ("languages", language),
-        ("query", query),
+        ("query", movie_filename),
         ("moviehash", hash),
     ];
 
@@ -271,9 +287,9 @@ pub fn search_for_subtitle_id_key(
     if use_gui {
         let json_array = json["data"].as_array().unwrap();
         let file_id = if gui_mode == "gtk" {
-            process_id_key_with_zenity(json_array)?
+            process_id_key_with_zenity(json_array, movie_filename)?
         } else {
-            process_id_key_with_kdialog(json_array)?
+            process_id_key_with_kdialog(json_array, movie_filename)?
         };
 
         Ok(file_id)
@@ -359,16 +375,12 @@ pub fn download_url(
     let urlwp = reqwest::Url::parse(URL)?;
     let client = reqwest::blocking::Client::new();
 
-    let resp = client
-        .post(urlwp)
-        .body(payload)
-        .headers(headers)
-        .send()?;
+    let resp = client.post(urlwp).body(payload).headers(headers).send()?;
 
     if resp.status() != reqwest::StatusCode::OK {
         return Err(format!("Bad request: {}, {}", resp.status(), resp.text()?))?;
     }
-    
+
     let url: Url = serde_json::from_str(&resp.text()?)?;
 
     Ok(url)
