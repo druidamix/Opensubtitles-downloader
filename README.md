@@ -3,7 +3,10 @@
 > Primarely it will download subtitles by hash. If none found, it download the first subtitle found.
 
 ## Installation
-
+Archlinux AUR:
+```
+yay -S osd-bin
+```
 Linux:
 
 ```sh
