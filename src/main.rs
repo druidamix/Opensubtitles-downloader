@@ -52,9 +52,10 @@ impl Config {
 
         //Checking if osd.conf exists
         let config = if let Ok(content) = std::fs::read(&config_path) {
-            let config: Config = match toml::from_str(&String::from_utf8(content)?){
+            //from toml to object
+            let config: Config = match toml::from_str(&String::from_utf8(content)?) {
                 Ok(config) => config,
-                Err(e) => Err(format!("Error reading config file: {}",e.message()))?,
+                Err(e) => Err(format!("Error reading config file: {}", e.message()))?,
             };
 
             // if config.user.is_empty()
@@ -106,7 +107,7 @@ impl ParsedArgs {
         let mut opts = Options::new();
         opts.optflag("g", "gui", "Choose subtitle from a dialog list");
         opts.optflag("h", "help", "Prints this help");
-        opts.optflag("v", "verbose", "Prints more information");
+        opts.optflag("v", "verbose", "Prints verbose information");
 
         //Checks for unrecognized options
         let matches = match opts.parse(&args[1..]) {
