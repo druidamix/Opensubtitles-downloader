@@ -1,6 +1,6 @@
 [package]
 authors= ["Marc Ratés druidamix@gmail.com"]
-description = "Cli tool for downloading subtitles from opensubtitles.org using the new API"
+description = "Cli tool for downloading subtitles from opensubtitles.com using the new API"
 homepage = "https://github.com/druidamix/Opensubtitles-downloader"
 repository = "https://github.com/druidamix/Opensubtitles-downloader"
 license = "GPL"
