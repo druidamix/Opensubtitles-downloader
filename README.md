@@ -18,11 +18,11 @@ make install
 ## Configure
 Register your account on https://www.opensubtitles.com
 
-Then execute osd, so the conf file will be generated on ~/.config/osd.conf
+Then execute osd, so it will generate the conf file on ~/.config/osd.conf
 
 Fill up the osd.conf with your account key, user and pass.
 
-Your are done.
+You are done.
 
 ## Usage example
 
@@ -30,7 +30,7 @@ usage: osd [-h] [--gui] movie_file
 
 example: osd lord_of_the_rings.mp4
 
-Add --gui as parameter to choose which subtitle to download. (zenity or kdialog)
+Add --gui as a parameter to choose which subtitle to download. (zenity or kdialog)
 
 ## Release History
 * 0.1.7
@@ -40,13 +40,13 @@ Add --gui as parameter to choose which subtitle to download. (zenity or kdialog)
 * 0.1.2
     * Autodetect gtk or qt, so zennity or kdialog will be used
 * 0.1.1
-    * Added user agent as parameter on osd.conf
+    * Added user agent as a parameter on osd.conf
 * 0.1.0
     * Work in progress and testing
 
 ## Meta
 
-Your Name – Marc Ratés, druidamix@gmail.com
+Marc Ratés, druidamix@gmail.com
 
 Distributed under the GPL 2.0 license. See ``LICENSE`` for more information.
 
