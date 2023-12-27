@@ -1,5 +1,5 @@
 # Opensubtitles Downloader (new API) 
-> Cli tool for downloading subtitles from opensubtitles.org using the new API. From 2024, they will turn off the old api.<br>
+> Cli tool for downloading subtitles from opensubtitles.com using the new API. From 2024, they will turn off the old api.<br>
 > Primarily, it downloads subtitles with hash. If not, it downloads the first subtitle found.
 ## Installation
 Archlinux AUR:
