@@ -5,20 +5,21 @@ default: build
 	
 release :=--release
 target :=release
+DESTDIR := ~/.local/bin
 
 build:
 	cargo build $(release)
 
 install-relsease:
-	cp target/$(target)$(prog) /usr/bin/$(prog)
+	cp target/$(target)$(prog) $(DESTDIR)/$(prog)
 	strip /usr/bin/$(prog)
 
 install:
-	cp target/$(target)/$(prog) ~/.local/bin/$(prog)
-	strip ~/.local/bin/$(prog)
+	cp target/$(target)/$(prog) $(DESTDIR)/$(prog)
+	strip $(DESTDIR)/$(prog)
 
 uninstall:
-	rm ~/.local/bin/osd
+	rm $(DESTDIR)/osd
 
 clean:
 	rm -rf target
