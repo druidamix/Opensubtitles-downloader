@@ -4,7 +4,7 @@
 ## Installation
 Archlinux AUR:
 ```
-yay -S osd-bin
+[yay or paru] -S osd-bin
 ```
 Linux:
 
