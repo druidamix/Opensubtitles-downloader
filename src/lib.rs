@@ -128,6 +128,7 @@ fn process_id_key_with_kdialog(
             n["attributes"]["files"][0]["file_id"].as_i64().unwrap_or(0),
         );
 
+        //returns a tuple with kdialog parameters
         let movieitem = if n["attributes"]["moviehash_match"] == true {
             (
                 index.to_string(),
@@ -137,7 +138,7 @@ fn process_id_key_with_kdialog(
         } else {
             (index.to_string(), filename, "off".to_string())
         };
-        //saves filename and hash on a tuple vector
+        //saves index,filename/hash and slected on a tuple vector
         v_titles.push(movieitem);
     }
 
@@ -166,7 +167,6 @@ fn process_id_key_with_kdialog(
     };
 
     let status_code = out.status.success();
-    print!("Status code: {}", status_code);
     //0: movi selected, !=0: cancel button
     if !status_code {
         Err("Movie not selected.")?
@@ -386,6 +386,7 @@ pub fn download_url(
     Ok(url)
 }
 
+//Downloads the sub and saves it
 pub fn download_save_file(sub_url: &str, path: &str) -> Result<(), Box<dyn Error>> {
     let mut sub_path = PathBuf::from(path);
     sub_path.set_extension("srt");
