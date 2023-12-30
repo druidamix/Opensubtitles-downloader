@@ -68,7 +68,7 @@ impl Config {
             // }
             config
         } else {
-            //if config file not found create a new one.
+            //Create a new one.
             Config::build()?
         };
 
@@ -158,12 +158,12 @@ impl ParsedArgs {
         }
 
         //Returns struct of ParsedArgs
-        return ParsedArgs {
+        ParsedArgs {
             use_gui,
             gui_mode,
             path: matches.free.first().unwrap().to_string(),
             verbose,
-        };
+        }
     }
 }
 
@@ -202,7 +202,7 @@ fn run(parsed_args: ParsedArgs, config: Config) -> Result<(), Box<dyn Error>> {
         println!("Login token: {}", token);
     }
 
-    // download suitable subtitle
+    // Downloadss suitable url subtitle
     let url: Url = download_url(&file_id, &token, &config.key, &config.useragent)?;
 
     if parsed_args.verbose {
