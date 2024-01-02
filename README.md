@@ -50,6 +50,6 @@ Add --gui as a parameter to choose which subtitle to download. (zenity or kdialo
 
 Marc Ratés, druidamix@gmail.com
 
-Distributed under the GPL 2.0 license. See ``LICENSE`` for more information.
+Distributed under the GPL-3.0 license. See ``LICENSE`` for more information.
 
 
