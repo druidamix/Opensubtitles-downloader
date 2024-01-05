@@ -1,6 +1,6 @@
 use getopts::Options;
+use osd::download_link;
 use osd::download_save_file;
-use osd::download_url;
 use osd::login;
 use osd::search_for_subtitle_id_key;
 use osd::Movie;
@@ -26,15 +26,31 @@ struct Config {
 
 //Manages osd.conf file
 impl Config {
+    fn new(
+        key: String,
+        user: String,
+        password: String,
+        language: String,
+        useragent: String,
+    ) -> Self {
+        Self {
+            key,
+            user,
+            password,
+            language,
+            useragent,
+        }
+    }
+
     //Creates new config osd.conf file
     fn build() -> Result<Config, Box<dyn Error>> {
-        let config = Config {
-            key: "".to_owned(),
-            user: "".to_owned(),
-            password: "".to_owned(),
-            language: "en".to_owned(),
-            useragent: "Opensubtitles Downloader".to_owned(),
-        };
+        let config = Config::new(
+            "".to_owned(),
+            "".to_owned(),
+            "".to_owned(),
+            "en".to_owned(),
+            "Opensubtitles downloader".to_owned(),
+        );
         Config::write_config(&config)?;
         Ok(config)
     }
@@ -43,11 +59,10 @@ impl Config {
     fn load_config() -> Result<Config, Box<dyn Error>> {
         let home_dir = std::env::var_os("HOME").ok_or("No home directory")?;
         let mut config_path = std::path::PathBuf::new();
-        config_path = config_path
-            .join(home_dir.clone())
-            .join(".config")
-            .join("osd");
+
+        config_path = config_path.join(home_dir).join(".config").join("osd");
         std::fs::create_dir_all(config_path.clone())?;
+
         config_path = config_path.join("osd.conf");
 
         //Checking if osd.conf exists
@@ -77,14 +92,13 @@ impl Config {
 
     //Write a osd.conf file
     fn write_config(config: &Config) -> Result<(), Box<dyn Error>> {
-        let home_dir = std::env::var_os("HOME").ok_or("No home directory")?;
+        let home_dir = std::env::var_os("HOME").ok_or("No home envirotment variable found")?;
         let mut config_path = std::path::PathBuf::new();
-        config_path = config_path
-            .join(home_dir.clone())
-            .join(".config")
-            .join("osd");
+
+        config_path = config_path.join(home_dir).join(".config").join("osd");
         std::fs::create_dir_all(config_path.clone())?;
         config_path = config_path.join("osd.conf");
+
         let config_string = toml::to_string(config)?;
         std::fs::write(&config_path, config_string)?;
 
@@ -101,6 +115,15 @@ struct ParsedArgs {
 }
 
 impl ParsedArgs {
+    fn new(use_gui: bool, gui_mode: String, path: String, verbose: bool) -> Self {
+        Self {
+            use_gui,
+            gui_mode,
+            path,
+            verbose,
+        }
+    }
+
     /// Builds a struct of arguments
     fn build(args: &[String]) -> ParsedArgs {
         // -- parse arguments
@@ -158,12 +181,12 @@ impl ParsedArgs {
         }
 
         //Returns struct of ParsedArgs
-        ParsedArgs {
+        ParsedArgs::new(
             use_gui,
             gui_mode,
-            path: matches.free.first().unwrap().to_string(),
+            matches.free.first().unwrap().to_string(),
             verbose,
-        }
+        )
     }
 }
 
@@ -203,7 +226,7 @@ fn run(parsed_args: ParsedArgs, config: Config) -> Result<(), Box<dyn Error>> {
     }
 
     // Downloadss suitable url subtitle
-    let url: Url = download_url(&file_id, &token, &config.key, &config.useragent)?;
+    let url: Url = download_link(&file_id, &token, &config.key, &config.useragent)?;
 
     if parsed_args.verbose {
         println!("Subtitle to be downloaded: {}", url.link);

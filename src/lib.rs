@@ -17,6 +17,11 @@ pub struct Movie {
 }
 
 impl Movie {
+    //Create new struct movie
+    pub fn new(path: String, title: String, hash: String) -> Self {
+        Self { path, title, hash }
+    }
+
     ///Movie properties builder
     pub fn build(path: &str) -> Result<Movie, Box<dyn Error>> {
         let path = Path::new(path);
@@ -58,11 +63,7 @@ impl Movie {
         let hash = Movie::create_hash(&path)?;
 
         //Returns movie struct
-        Ok(Movie {
-            path,
-            title: movie_title,
-            hash,
-        })
+        Ok(Movie::new(path, movie_title, hash))
     }
 
     ///computes hash from a file
@@ -252,6 +253,8 @@ pub fn search_for_subtitle_id_key(
     gui_mode: &str,
     user_agent: &str,
 ) -> Result<String, Box<dyn Error>> {
+    const URL: &str = "https://api.opensubtitles.com/api/v1/subtitles";
+
     let params = [
         ("languages", language),
         ("query", movie_filename),
@@ -259,7 +262,6 @@ pub fn search_for_subtitle_id_key(
     ];
 
     //makes a request
-    const URL: &str = "https://api.opensubtitles.com/api/v1/subtitles";
     let urlwp = reqwest::Url::parse_with_params(URL, params)?;
 
     let mut headers = HeaderMap::new();
@@ -350,12 +352,14 @@ pub struct Url {
 }
 
 ///Request a download url for a subtitle.
-pub fn download_url(
+pub fn download_link(
     file_id: &str,
     token: &str,
     key: &str,
     user_agent: &str,
 ) -> Result<Url, Box<dyn Error>> {
+    const URL: &str = "https://api.opensubtitles.com/api/v1/download";
+
     let mut headers = HeaderMap::new();
     headers.insert(USER_AGENT, HeaderValue::from_str(user_agent)?);
     headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
@@ -371,7 +375,6 @@ pub fn download_url(
     let payload = serde_json::to_string(&payload)?;
 
     //makes a request
-    const URL: &str = "https://api.opensubtitles.com/api/v1/download";
     let urlwp = reqwest::Url::parse(URL)?;
     let client = reqwest::blocking::Client::new();
 
