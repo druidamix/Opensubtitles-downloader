@@ -272,12 +272,14 @@ pub fn search_for_subtitle_id_key(
     let client = reqwest::blocking::Client::new();
     let resp = client.get(urlwp).headers(headers).send()?;
 
-    if resp.status() != reqwest::StatusCode::OK {
-        return Err(format!("Bad request: {}, {}", resp.status(), resp.text()?))?;
+    let status = resp.status();
+    let text = resp.text()?;
+    if status != reqwest::StatusCode::OK {
+        Err(format!("Bad request: {}, {}", status, text))?;
     }
 
     //to json
-    let json: Value = serde_json::from_str(&resp.text()?)?;
+    let json: Value = serde_json::from_str(&text)?;
 
     //If no subtitles found, exit
     let total_count = json["total_count"].as_i64().unwrap_or(0);
@@ -332,11 +334,13 @@ pub fn login(
     let client = reqwest::blocking::Client::new();
     let resp = client.post(url).body(payload).headers(headers).send()?;
 
-    if resp.status() != reqwest::StatusCode::OK {
-        return Err(format!("Bad request: {}, {}", resp.status(), resp.text()?))?;
+    let status = resp.status();
+    let text = resp.text()?;
+    if status != reqwest::StatusCode::OK {
+        Err(format!("Bad request: {}, {}", status, text))?;
     }
 
-    let resp = resp.text()?;
+    let resp = text;
     let rej: Value = serde_json::from_str(&resp)?;
     Ok(rej["token"].to_string())
 }
@@ -380,11 +384,13 @@ pub fn download_link(
 
     let resp = client.post(urlwp).body(payload).headers(headers).send()?;
 
-    if resp.status() != reqwest::StatusCode::OK {
-        return Err(format!("Bad request: {}, {}", resp.status(), resp.text()?))?;
+    let status = resp.status();
+    let text = resp.text()?;
+    if status != reqwest::StatusCode::OK {
+        Err(format!("Bad request: {}, {}", status, status))?;
     }
 
-    let url: Url = serde_json::from_str(&resp.text()?)?;
+    let url: Url = serde_json::from_str(&text)?;
 
     Ok(url)
 }
