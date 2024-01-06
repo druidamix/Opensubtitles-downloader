@@ -92,7 +92,7 @@ impl Config {
 
     //Write a osd.conf file
     fn write_config(config: &Config) -> Result<(), Box<dyn Error>> {
-        let home_dir = std::env::var_os("HOME").ok_or("No home envirotment variable found")?;
+        let home_dir = std::env::var_os("HOME").ok_or("No home environtment variable found")?;
         let mut config_path = std::path::PathBuf::new();
 
         config_path = config_path.join(home_dir).join(".config").join("osd");
