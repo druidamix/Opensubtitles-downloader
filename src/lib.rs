@@ -169,13 +169,13 @@ fn process_id_key_with_kdialog(
 
     let is_succsessful = out.status.success();
     
-    if !is_succsessful {
-        Err("Movie not selected.")?
-    } else {
+    if is_succsessful {
         let movie_selected = std::str::from_utf8(&out.stdout)?.trim_end_matches('\n');
         let file_id = filename_map.get(movie_selected);
         //Returs file_id
         Ok(file_id.unwrap().to_string())
+    } else {
+        Err("Movie not selected.")?
     }
 }
 
@@ -230,9 +230,7 @@ fn process_id_key_with_zenity(
 
     let is_successful = out.status.success();
     
-    if !is_successful {
-        Err("Movie not selected.")?
-    } else {
+    if is_successful {
         let movie_selected = std::str::from_utf8(&out.stdout)?.trim_end_matches('\n');
         let file_id = filename_map.get(movie_selected);
 
@@ -242,6 +240,8 @@ fn process_id_key_with_zenity(
         } else {
             Err("Error selecting movie")?
         }
+    } else {
+        Err("Movie not selected.")?
     }
 }
 ///Obtains movie id from opensubtitles from hash or movie filename.
