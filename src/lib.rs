@@ -167,9 +167,9 @@ fn process_id_key_with_kdialog(
         Err(_) => Err("Kdialog not found.")?,
     };
 
-    let status_code = out.status.success();
-    //0: movi selected, !=0: cancel button
-    if !status_code {
+    let is_succsessful = out.status.success();
+    
+    if !is_succsessful {
         Err("Movie not selected.")?
     } else {
         let movie_selected = std::str::from_utf8(&out.stdout)?.trim_end_matches('\n');
@@ -206,6 +206,7 @@ fn process_id_key_with_zenity(
         //saves filename and hash on a tuple vector
         v_titles.push((filename, moviehash));
     }
+
     let mut zenity_process = Command::new("zenity");
     zenity_process.args([
         "--width=720",
@@ -227,9 +228,9 @@ fn process_id_key_with_zenity(
         Err(_) => Err("Zenity not found.")?,
     };
 
-    let status_code = out.status.code().unwrap_or(1);
-    //0: movi selected, !=0: cancel button
-    if status_code == 1 {
+    let is_successful = out.status.success();
+    
+    if !is_successful {
         Err("Movie not selected.")?
     } else {
         let movie_selected = std::str::from_utf8(&out.stdout)?.trim_end_matches('\n');
@@ -316,6 +317,8 @@ pub fn login(
     password: &str,
     user_agent: &str,
 ) -> Result<String, Box<dyn Error>> {
+    const URL: &str = "https://api.opensubtitles.com/api/v1/login";
+
     let mut headers = HeaderMap::new();
     headers.insert(USER_AGENT, HeaderValue::from_str(user_agent)?);
     headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
@@ -323,7 +326,6 @@ pub fn login(
     headers.insert("Api-Key", HeaderValue::from_str(key)?);
 
     //makes a request
-    const URL: &str = "https://api.opensubtitles.com/api/v1/login";
     let url = reqwest::Url::parse(URL)?;
 
     let mut payload = HashMap::new();
