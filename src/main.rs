@@ -156,9 +156,9 @@ impl ParsedArgs {
         if matches.opt_present("g") {
             use_gui = true;
 
-            //Detect desktop mode
+            //Detect desktop mode, default gtk
             let desktop = match env::var_os("XDG_CURRENT_DESKTOP") {
-                Some(desktop) => desktop.into_string().unwrap(),
+                Some(desktop) => desktop.into_string().unwrap_or("gtk".to_owned()),
                 None => "gtk".to_string(),
             };
 
