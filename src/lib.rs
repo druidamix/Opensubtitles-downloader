@@ -340,8 +340,7 @@ pub fn login(
         Err(format!("Bad request: {}, {}", status, text))?;
     }
 
-    let resp = text;
-    let rej: Value = serde_json::from_str(&resp)?;
+    let rej: Value = serde_json::from_str(&text)?;
     Ok(rej["token"].to_string())
 }
 
@@ -391,7 +390,6 @@ pub fn download_link(
     }
 
     let url: Url = serde_json::from_str(&text)?;
-
     Ok(url)
 }
 
