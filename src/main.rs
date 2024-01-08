@@ -1,6 +1,6 @@
 use getopts::Options;
 use osd::download_link;
-use osd::download_save_file;
+use osd::download_save_sub;
 use osd::login;
 use osd::search_for_subtitle_id_key;
 use osd::Movie;
@@ -237,7 +237,8 @@ fn run(parsed_args: ParsedArgs, config: Config) -> Result<(), Box<dyn Error>> {
         println!("Requests reset time: {}", url.reset_time);
     }
 
-    download_save_file(&url.link, &movie.path)?;
+    //Downloads the subtitle and saves on the correct path
+    download_save_sub(&url.link, &movie.path)?;
 
     Ok(())
 }

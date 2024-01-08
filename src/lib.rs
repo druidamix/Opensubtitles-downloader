@@ -238,7 +238,7 @@ fn process_id_key_with_zenity(
             //Returs file_id
             Ok(value.to_string())
         } else {
-            Err("Error selecting movie")?
+            Err("Error selecting movie.")?
         }
     } else {
         Err("Movie not selected.")?
@@ -396,7 +396,7 @@ pub fn download_link(
 }
 
 //Downloads the sub and saves it
-pub fn download_save_file(sub_url: &str, path: &str) -> Result<(), Box<dyn Error>> {
+pub fn download_save_sub(sub_url: &str, path: &str) -> Result<(), Box<dyn Error>> {
     let mut sub_path = PathBuf::from(path);
     sub_path.set_extension("srt");
 
