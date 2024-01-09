@@ -305,7 +305,7 @@ pub fn search_for_subtitle_id_key(
                 return Ok(n["attributes"]["files"][0]["file_id"].to_string());
             }
         }
-        //If not the first id of the list
+        //If not, the first id of the list
         Ok(json["data"][0]["attributes"]["files"][0]["file_id"].to_string())
     }
 }
