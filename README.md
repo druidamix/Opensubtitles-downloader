@@ -16,9 +16,9 @@ make
 make install
 ```
 ## Configure
-Register your account on https://www.opensubtitles.com
+Register your account on https://www.opensubtitles.com and then create a new api consumer.
 
-Then execute osd, so it will generate the conf file on ~/.config/osd.conf
+Execute osd, so it will generate the conf file on ~/.config/osd.conf
 
 Fill up the osd.conf with your account key, user and pass.
 
