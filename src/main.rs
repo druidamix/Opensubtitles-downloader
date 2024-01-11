@@ -92,7 +92,8 @@ impl Config {
 
     //Write a osd.conf file
     fn write_config(config: &Config) -> Result<(), Box<dyn Error>> {
-        let home_dir = std::env::var_os("HOME").ok_or("No home environtment variable found")?;
+        let home_dir =
+            std::env::var_os("HOME").ok_or("No home environtment variable found. Strange")?;
         let mut config_path = std::path::PathBuf::new();
 
         config_path = config_path.join(home_dir).join(".config").join("osd");
@@ -131,6 +132,7 @@ impl ParsedArgs {
         opts.optflag("g", "gui", "Choose subtitle from a dialog list");
         opts.optflag("h", "help", "Prints this help");
         opts.optflag("v", "verbose", "Prints verbose information");
+        opts.optflag("V", "version", "print version information");
 
         //Checks for unrecognized options
         let matches = match opts.parse(&args[1..]) {
@@ -145,8 +147,14 @@ impl ParsedArgs {
         //prints help and exits
         if matches.opt_present("h") {
             print_help(opts);
-            std::process::exit(1);
+            std::process::exit(0);
         };
+
+        //prints osd current version
+        if matches.opt_present("V") {
+            println!(env!("CARGO_PKG_VERSION"));
+            std::process::exit(0)
+        }
 
         let verbose = matches.opt_present("v");
 
@@ -157,7 +165,7 @@ impl ParsedArgs {
             use_gui = true;
 
             //Detect desktop mode, default gtk
-            let desktop = match env::var_os("XDG_CURRENT_DESKTOP") {
+            let current_desktop = match env::var_os("XDG_CURRENT_DESKTOP") {
                 Some(desktop) => desktop.into_string().unwrap_or("gtk".to_owned()),
                 None => "gtk".to_string(),
             };
@@ -165,7 +173,7 @@ impl ParsedArgs {
             gui_mode = if [
                 "Cinnamon", "GNOME", "XFCE", "xfce4", "bspwm", "gnome", "gtk",
             ]
-            .contains(&desktop.as_str())
+            .contains(&current_desktop.as_str())
             {
                 "gtk".to_string()
             } else {
@@ -230,9 +238,6 @@ fn run(parsed_args: ParsedArgs, config: Config) -> Result<(), Box<dyn Error>> {
 
     if parsed_args.verbose {
         println!("Subtitle to be downloaded: {}", url.link);
-    }
-
-    if parsed_args.verbose {
         println!("Remaining requests for the day: {}", url.remaining);
         println!("Requests reset time: {}", url.reset_time);
     }
