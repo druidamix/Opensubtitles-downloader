@@ -1,15 +1,7 @@
 use getopts::Options;
-use osd::download_link;
-use osd::download_save_sub;
-use osd::login;
-use osd::search_for_subtitle_id_key;
-use osd::Movie;
-use osd::Url;
-use serde::Deserialize;
-use serde::Serialize;
-use std::env;
-use std::error::Error;
-use std::process;
+use osd::{Url, download_link, download_save_sub, login, search_for_subtitle_id_key, Movie};
+use serde::{Deserialize, Serialize};
+use std::{env, error::Error, process::{self}};
 
 //fn _type_of<T>(_: &T) {
 //    println!("{}", std::any::type_name::<T>())
@@ -140,7 +132,7 @@ impl ParsedArgs {
             Err(f) => {
                 println!("{}", f);
                 print_help(opts);
-                std::process::exit(0);
+                std::process::exit(1);
             }
         };
 
