@@ -1,7 +1,11 @@
 use getopts::Options;
-use osd::{Url, download_link, download_save_sub, login, search_for_subtitle_id_key, Movie};
+use osd::{download_link, download_save_sub, login, search_for_subtitle_id_key, Movie, Url};
 use serde::{Deserialize, Serialize};
-use std::{env, error::Error, process::{self}};
+use std::{
+    env,
+    error::Error,
+    process::{self},
+};
 
 //fn _type_of<T>(_: &T) {
 //    println!("{}", std::any::type_name::<T>())
@@ -247,14 +251,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     let parsed_args = ParsedArgs::build(&args);
 
     match run(parsed_args, config) {
-        Ok(_) => process::exit(0),
+        Ok(_) => Ok(()),
         Err(e) => {
             if let Some(err) = e.downcast_ref::<reqwest::Error>() {
                 eprintln!("Request Error: {}", err);
             } else {
                 eprintln!("{}", e);
             }
+            process::exit(1);
         }
     }
-    Ok(())
 }
