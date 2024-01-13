@@ -128,7 +128,7 @@ impl ParsedArgs {
         opts.optflag("g", "gui", "Choose subtitle from a dialog list");
         opts.optflag("h", "help", "Prints this help");
         opts.optflag("v", "verbose", "Prints verbose information");
-        opts.optflag("V", "version", "print version information");
+        opts.optflag("V", "version", "Prints version information");
 
         //Checks for unrecognized options
         let matches = match opts.parse(&args[1..]) {
