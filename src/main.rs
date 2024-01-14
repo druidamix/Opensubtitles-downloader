@@ -122,7 +122,7 @@ impl ParsedArgs {
     }
 
     /// Builds a struct of arguments
-    fn build(args: &[String]) -> ParsedArgs {
+    fn build() -> ParsedArgs {
         // -- parse arguments
         let mut opts = Options::new();
         opts.optflag("g", "gui", "Choose subtitle from a dialog list");
@@ -130,6 +130,7 @@ impl ParsedArgs {
         opts.optflag("v", "verbose", "Prints verbose information");
         opts.optflag("V", "version", "Prints version information");
 
+        let args: Vec<String> =env::args().collect();
         //Checks for unrecognized options
         let matches = match opts.parse(&args[1..]) {
             Ok(m) => m,
@@ -247,8 +248,7 @@ fn run(parsed_args: ParsedArgs, config: Config) -> Result<(), Box<dyn Error>> {
 fn main() -> Result<(), Box<dyn Error>> {
     //First loading config, because parseargs calls process::exit()
     let config = Config::load_config()?;
-    let args = env::args().collect::<Vec<String>>();
-    let parsed_args = ParsedArgs::build(&args);
+    let parsed_args = ParsedArgs::build();
 
     match run(parsed_args, config) {
         Ok(_) => Ok(()),
