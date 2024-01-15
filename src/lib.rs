@@ -168,7 +168,7 @@ fn process_id_key_with_kdialog(
     };
 
     let is_succsessful = out.status.success();
-    
+
     if is_succsessful {
         let movie_selected = std::str::from_utf8(&out.stdout)?.trim_end_matches('\n');
         let file_id = filename_map.get(movie_selected);
@@ -229,7 +229,7 @@ fn process_id_key_with_zenity(
     };
 
     let is_successful = out.status.success();
-    
+
     if is_successful {
         let movie_selected = std::str::from_utf8(&out.stdout)?.trim_end_matches('\n');
         let file_id = filename_map.get(movie_selected);
@@ -397,8 +397,9 @@ pub fn download_link(
 
 //Downloads the sub and saves it
 pub fn download_save_sub(sub_url: &str, path: &str) -> Result<(), Box<dyn Error>> {
-    let mut sub_path = PathBuf::from(path);
-    sub_path.set_extension("srt");
+    let mut path = PathBuf::from(path);
+    // replaces the extension to srt
+    path.set_extension("srt");
 
     let url = reqwest::Url::parse(sub_url)?;
     let mut resp = reqwest::blocking::get(url)?;
@@ -408,7 +409,7 @@ pub fn download_save_sub(sub_url: &str, path: &str) -> Result<(), Box<dyn Error>
     }
 
     //Save the subtitle to disk
-    let mut file_path = File::create(sub_path)?;
+    let mut file_path = File::create(path)?;
     io::copy(&mut resp, &mut file_path)?;
 
     Ok(())

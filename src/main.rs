@@ -130,7 +130,8 @@ impl ParsedArgs {
         opts.optflag("v", "verbose", "Prints verbose information");
         opts.optflag("V", "version", "Prints version information");
 
-        let args: Vec<String> =env::args().collect();
+        //getting command line arguments
+        let args: Vec<String> = env::args().collect();
         //Checks for unrecognized options
         let matches = match opts.parse(&args[1..]) {
             Ok(m) => m,
