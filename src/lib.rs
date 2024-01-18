@@ -23,7 +23,7 @@ impl Movie {
     }
 
     ///Movie properties builder
-    pub fn build(path: &str) -> Result<Movie, Box<dyn Error>> {
+    pub fn build(path: &str, alternate_title: &str) -> Result<Movie, Box<dyn Error>> {
         let path = Path::new(path);
 
         //Checking file exists
@@ -49,18 +49,23 @@ impl Movie {
         //Path to String
         let path = path_movie.to_str().unwrap_or_default().to_owned();
 
-        //Remove extension
-        path_movie.set_extension("");
+        let mut hash = String::default();
+        let movie_title;
 
-        //Getting movie filename from path
-        let movie_title = path_movie
-            .file_name()
-            .unwrap_or_default()
-            .to_string_lossy()
-            .to_string();
+        if alternate_title.is_empty() {
+            path_movie.set_extension("");
+            //Getting movie filename from path
+            movie_title = path_movie
+                .file_name()
+                .unwrap_or_default()
+                .to_string_lossy()
+                .to_string();
 
-        //hash used by opensubtitles
-        let hash = Movie::create_hash(&path)?;
+            //hash used by opensubtitles
+            hash = Movie::create_hash(&path)?;
+        }else{
+            movie_title = alternate_title.to_owned();
+        }
 
         //Returns movie struct
         Ok(Movie::new(path, movie_title, hash))

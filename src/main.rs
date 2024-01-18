@@ -108,15 +108,17 @@ struct ParsedArgs {
     use_gui: bool,
     gui_mode: String,
     path: String,
+    alternate_title: String,
     verbose: bool,
 }
 
 impl ParsedArgs {
-    fn new(use_gui: bool, gui_mode: String, path: String, verbose: bool) -> Self {
+    fn new(use_gui: bool, gui_mode: String, path: String, verbose: bool, alternate_title: String) -> Self {
         Self {
             use_gui,
             gui_mode,
             path,
+            alternate_title,
             verbose,
         }
     }
@@ -138,6 +140,7 @@ impl ParsedArgs {
                     .help("Select subtitle from a dialog")
                     .action(ArgAction::SetTrue),
             )
+            .arg(Arg::new("alt_title").short('a'))
             .arg(Arg::new("movie").required(true))
             .get_matches();
 
@@ -167,6 +170,14 @@ impl ParsedArgs {
             };
         }
 
+        let alt_title: String;
+        if let Some(name) = match_results.get_one::<String>("alt_title") {
+            alt_title = name.to_owned();
+        }else{
+            alt_title = "".to_owned();
+        }
+
+        println!("alt title: {}", alt_title);
 
         let file: &String = match_results.get_one::<String>("movie").unwrap();
         //Returns struct of ParsedArgs
