@@ -113,7 +113,13 @@ struct ParsedArgs {
 }
 
 impl ParsedArgs {
-    fn new(use_gui: bool, gui_mode: String, path: String, verbose: bool, alternate_title: String) -> Self {
+    fn new(
+        use_gui: bool,
+        gui_mode: String,
+        path: String,
+        alternate_title: String,
+        verbose: bool,
+    ) -> Self {
         Self {
             use_gui,
             gui_mode,
@@ -140,7 +146,12 @@ impl ParsedArgs {
                     .help("Select subtitle from a dialog")
                     .action(ArgAction::SetTrue),
             )
-            .arg(Arg::new("alt_title").short('a'))
+            .arg(
+                Arg::new("alt_title")
+                    .long("alt_title")
+                    .short('a')
+                    .help("Alternate title, (no hash)")
+            )
             .arg(Arg::new("movie").required(true))
             .get_matches();
 
@@ -173,21 +184,19 @@ impl ParsedArgs {
         let alt_title: String;
         if let Some(name) = match_results.get_one::<String>("alt_title") {
             alt_title = name.to_owned();
-        }else{
+        } else {
             alt_title = "".to_owned();
         }
 
-        println!("alt title: {}", alt_title);
-
         let file: &String = match_results.get_one::<String>("movie").unwrap();
         //Returns struct of ParsedArgs
-        ParsedArgs::new(use_gui, gui_mode, file.to_string(), verbose)
+        ParsedArgs::new(use_gui, gui_mode, file.to_string(), alt_title, verbose)
     }
 }
 
 fn run(parsed_args: ParsedArgs, config: Config) -> Result<(), Box<dyn Error>> {
     //Gets movie properties
-    let movie = Movie::build(&parsed_args.path)?;
+    let movie = Movie::build(&parsed_args.path, &parsed_args.alternate_title)?;
 
     if parsed_args.verbose {
         println!("Using api key: {}", config.key);
