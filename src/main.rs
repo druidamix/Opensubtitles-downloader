@@ -1,4 +1,4 @@
-use getopts::Options;
+use clap::{command, Arg, ArgAction};
 use osd::{download_link, download_save_sub, login, search_for_subtitle_id_key, Movie, Url};
 use serde::{Deserialize, Serialize};
 use std::{
@@ -123,43 +123,31 @@ impl ParsedArgs {
 
     /// Builds a struct of arguments
     fn build() -> ParsedArgs {
+        let match_results = command!()
+            .arg(
+                Arg::new("verbose")
+                    .long("verbose")
+                    .short('v')
+                    .help("Print verbose information")
+                    .action(ArgAction::SetTrue),
+            )
+            .arg(
+                Arg::new("gui")
+                    .long("gui")
+                    .short('g')
+                    .help("Select subtitle from a dialog")
+                    .action(ArgAction::SetTrue),
+            )
+            .arg(Arg::new("movie").required(true))
+            .get_matches();
+
         // -- parse arguments
-        let mut opts = Options::new();
-        opts.optflag("g", "gui", "Choose subtitle from a dialog list");
-        opts.optflag("h", "help", "Prints this help");
-        opts.optflag("v", "verbose", "Prints verbose information");
-        opts.optflag("V", "version", "Prints version information");
-
-        //getting command line arguments
-        let args: Vec<String> = env::args().collect();
-        //Checks for unrecognized options
-        let matches = match opts.parse(&args[1..]) {
-            Ok(m) => m,
-            Err(f) => {
-                println!("{}", f);
-                print_help(opts);
-                std::process::exit(1);
-            }
-        };
-
-        //prints help and exits
-        if matches.opt_present("h") {
-            print_help(opts);
-            std::process::exit(0);
-        };
-
-        //prints osd current version
-        if matches.opt_present("V") {
-            println!(env!("CARGO_PKG_VERSION"));
-            std::process::exit(0)
-        }
-
-        let verbose = matches.opt_present("v");
+        let verbose = match_results.get_flag("verbose");
 
         let mut use_gui = false;
         let mut gui_mode = Default::default();
 
-        if matches.opt_present("g") {
+        if match_results.get_flag("gui") {
             use_gui = true;
 
             //Detect desktop mode, default gtk
@@ -179,27 +167,11 @@ impl ParsedArgs {
             };
         }
 
-        let free_args = matches.free.len();
-        //Only accepts one argument, the movie filename
-        if free_args != 1 {
-            print_help(opts);
-            std::process::exit(0);
-        }
 
+        let file: &String = match_results.get_one::<String>("movie").unwrap();
         //Returns struct of ParsedArgs
-        ParsedArgs::new(
-            use_gui,
-            gui_mode,
-            matches.free.first().unwrap().to_string(),
-            verbose,
-        )
+        ParsedArgs::new(use_gui, gui_mode, file.to_string(), verbose)
     }
-}
-
-/// prints help
-fn print_help(opts: Options) {
-    let brief = "usage: osd [-h] [-g] [-v] movie";
-    println!("{}", opts.usage(brief));
 }
 
 fn run(parsed_args: ParsedArgs, config: Config) -> Result<(), Box<dyn Error>> {
