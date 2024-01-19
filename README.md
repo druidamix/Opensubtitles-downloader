@@ -32,6 +32,9 @@ example: osd lord_of_the_rings.mp4
 
 Add --gui as a parameter to choose which subtitle to download. (zenity or kdialog)
 
+Add --custom_title for using a different title 
+
+
 
 ## Meta
 
