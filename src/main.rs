@@ -150,7 +150,7 @@ impl ParsedArgs {
                 Arg::new("custom_title")
                     .long("custom_title")
                     .short('c')
-                    .help("Use a Custom title diofferent than the file name, (no hash)")
+                    .help("Use a Custom title different than the file name, (no hash)")
             )
             .arg(Arg::new("movie").required(true))
             .get_matches();
