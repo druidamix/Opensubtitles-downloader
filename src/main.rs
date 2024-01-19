@@ -108,7 +108,7 @@ struct ParsedArgs {
     use_gui: bool,
     gui_mode: String,
     path: String,
-    alternate_title: String,
+    custom_title: String,
     verbose: bool,
 }
 
@@ -117,14 +117,14 @@ impl ParsedArgs {
         use_gui: bool,
         gui_mode: String,
         path: String,
-        alternate_title: String,
+        custom_title: String,
         verbose: bool,
     ) -> Self {
         Self {
             use_gui,
             gui_mode,
             path,
-            alternate_title,
+            custom_title,
             verbose,
         }
     }
@@ -147,10 +147,10 @@ impl ParsedArgs {
                     .action(ArgAction::SetTrue),
             )
             .arg(
-                Arg::new("alt_title")
-                    .long("alt_title")
-                    .short('a')
-                    .help("Alternate title, (no hash)")
+                Arg::new("custom_title")
+                    .long("custom_title")
+                    .short('c')
+                    .help("Use a Custom title diofferent than the file name, (no hash)")
             )
             .arg(Arg::new("movie").required(true))
             .get_matches();
@@ -181,22 +181,22 @@ impl ParsedArgs {
             };
         }
 
-        let alt_title: String;
-        if let Some(name) = match_results.get_one::<String>("alt_title") {
-            alt_title = name.to_owned();
+        let custom_title: String;
+        if let Some(name) = match_results.get_one::<String>("custom_title") {
+            custom_title = name.to_owned();
         } else {
-            alt_title = "".to_owned();
+            custom_title = "".to_owned();
         }
 
         let file: &String = match_results.get_one::<String>("movie").unwrap();
         //Returns struct of ParsedArgs
-        ParsedArgs::new(use_gui, gui_mode, file.to_string(), alt_title, verbose)
+        ParsedArgs::new(use_gui, gui_mode, file.to_string(), custom_title, verbose)
     }
 }
 
 fn run(parsed_args: ParsedArgs, config: Config) -> Result<(), Box<dyn Error>> {
     //Gets movie properties
-    let movie = Movie::build(&parsed_args.path, &parsed_args.alternate_title)?;
+    let movie = Movie::build(&parsed_args.path, &parsed_args.custom_title)?;
 
     if parsed_args.verbose {
         println!("Using api key: {}", config.key);
