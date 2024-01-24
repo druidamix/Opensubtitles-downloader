@@ -49,23 +49,20 @@ impl Movie {
         //Path to String
         let path = path_movie.to_str().unwrap_or_default().to_owned();
 
-        let mut hash = String::default();
-        let movie_title;
-
-        if alternate_title.is_empty() {
-            path_movie.set_extension("");
+        let movie_title = if alternate_title.is_empty() {
             //Getting movie filename from path
-            movie_title = path_movie
+            path_movie.set_extension("");
+            path_movie
                 .file_name()
                 .unwrap_or_default()
                 .to_string_lossy()
-                .to_string();
+                .to_string()
+        } else {
+            alternate_title.to_owned()
+        };
 
-            //hash used by opensubtitles
-            hash = Movie::create_hash(&path)?;
-        }else{
-            movie_title = alternate_title.to_owned();
-        }
+        //hash used by opensubtitles
+        let hash = Movie::create_hash(&path)?;
 
         //Returns movie struct
         Ok(Movie::new(path, movie_title, hash))

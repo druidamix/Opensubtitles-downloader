@@ -150,7 +150,7 @@ impl ParsedArgs {
                 Arg::new("custom_title")
                     .long("custom_title")
                     .short('c')
-                    .help("Use a Custom title different than the file name, (no hash)")
+                    .help("Use a Custom title different than the file name")
             )
             .arg(Arg::new("movie").required(true))
             .get_matches();
@@ -159,7 +159,7 @@ impl ParsedArgs {
         let verbose = match_results.get_flag("verbose");
 
         let mut use_gui = false;
-        let mut gui_mode = Default::default();
+        let mut gui_mode = String::default();
 
         if match_results.get_flag("gui") {
             use_gui = true;
@@ -185,7 +185,7 @@ impl ParsedArgs {
         if let Some(name) = match_results.get_one::<String>("custom_title") {
             custom_title = name.to_owned();
         } else {
-            custom_title = "".to_owned();
+            custom_title = String::default();
         }
 
         let file: &String = match_results.get_one::<String>("movie").unwrap();
