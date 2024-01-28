@@ -10,7 +10,7 @@ DESTDIR := ~/.local/bin
 build:
 	cargo build $(release)
 
-install-relsease:
+install-release:
 	cp target/$(target)$(prog) $(DESTDIR)/$(prog)
 	strip /usr/bin/$(prog)
 
