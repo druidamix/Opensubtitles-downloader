@@ -174,8 +174,13 @@ fn process_id_key_with_kdialog(
     if is_succsessful {
         let movie_selected = std::str::from_utf8(&out.stdout)?.trim_end_matches('\n');
         let file_id = filename_map.get(movie_selected);
-        //Returs file_id
-        Ok(file_id.unwrap().to_string())
+        
+        if let Some(value) = file_id {
+            //Returs file_id
+            Ok(value.to_string())
+        } else {
+            Err("Error selecting movie.")?
+        }
     } else {
         Err("Movie not selected.")?
     }
