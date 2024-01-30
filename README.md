@@ -1,4 +1,4 @@
-# Opensubtitles Downloader (new API) 
+# Opensubtitles Downloader (osd-bin) 
 > Cli tool for downloading subtitles from opensubtitles.com using the new API. From 2024, they will turn off the old api.<br>
 > Primarily, it downloads subtitles with hash. If not, it downloads the first subtitle found.
 ## Installation
