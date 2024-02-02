@@ -23,7 +23,7 @@ impl Movie {
     }
 
     ///Movie properties builder
-    pub fn build(path: &str, alternate_title: &str) -> Result<Movie, Box<dyn Error>> {
+    pub fn build(path: &str, custom_title: &str) -> Result<Movie, Box<dyn Error>> {
         let path = Path::new(path);
 
         //Checking file exists
@@ -49,7 +49,7 @@ impl Movie {
         //Path to String
         let path = path_movie.to_str().unwrap_or_default().to_owned();
 
-        let movie_title = if alternate_title.is_empty() {
+        let movie_title = if custom_title.is_empty() {
             //Getting movie filename from path
             path_movie.set_extension("");
             path_movie
@@ -58,7 +58,7 @@ impl Movie {
                 .to_string_lossy()
                 .to_string()
         } else {
-            alternate_title.to_owned()
+            custom_title.to_owned()
         };
 
         //hash used by opensubtitles
