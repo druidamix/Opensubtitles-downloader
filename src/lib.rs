@@ -287,17 +287,17 @@ pub fn search_for_subtitle_id_key(
     }
 
     //to json
-    let json: Value = serde_json::from_str(&text)?;
+    let json_res: Value = serde_json::from_str(&text)?;
 
     //If no subtitles found, exit
-    let total_count = json["total_count"].as_i64().unwrap_or(0);
+    let total_count = json_res["total_count"].as_i64().unwrap_or(0);
     if total_count < 1 {
         Err("No subtitles found.")?
     }
 
     // Shows a selection movie list
     if use_gui {
-        let json_array = json["data"].as_array().unwrap();
+        let json_array = json_res["data"].as_array().unwrap();
         let file_id = if gui_mode == "gtk" {
             process_id_key_with_zenity(json_array, movie_filename)?
         } else {
@@ -307,13 +307,13 @@ pub fn search_for_subtitle_id_key(
         Ok(file_id)
     } else {
         //Looks for a hash match
-        for n in json.get("data").iter() {
+        for n in json_res.get("data").iter() {
             if n["attributes"]["moviehash_match"] == true {
                 return Ok(n["attributes"]["files"][0]["file_id"].to_string());
             }
         }
         //If not, the first id of the list
-        Ok(json["data"][0]["attributes"]["files"][0]["file_id"].to_string())
+        Ok(json_res["data"][0]["attributes"]["files"][0]["file_id"].to_string())
     }
 }
 
@@ -411,7 +411,7 @@ pub fn download_save_sub(sub_url: &str, path: &str) -> Result<(), Box<dyn Error>
     let url = reqwest::Url::parse(sub_url)?;
     let mut resp = reqwest::blocking::get(url)?;
 
-    if resp.status() != reqwest::StatusCode::OK {
+    if ! resp.status().is_success()  {
         Err(format!("Bad request: {}", resp.status()))?;
     }
 

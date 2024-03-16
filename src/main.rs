@@ -79,7 +79,7 @@ impl Config {
             // }
             config
         } else {
-            //Create a new one.
+            //Create a new config file.
             Config::build()?
         };
 
@@ -106,7 +106,7 @@ impl Config {
 ///Parsed arguments properties
 struct ParsedArgs {
     use_gui: bool,
-    gui_mode: String,
+    gui_mode: String, //gtk or qt
     path: String,
     custom_title: String,
     verbose: bool,
@@ -167,7 +167,7 @@ impl ParsedArgs {
             //Detect desktop mode, default gtk
             let current_desktop = match env::var_os("XDG_CURRENT_DESKTOP") {
                 Some(desktop) => desktop.into_string().unwrap_or("gtk".to_owned()),
-                None => "gtk".to_string(),
+                None => "gtk".to_owned(),
             };
 
             gui_mode = if [
@@ -181,6 +181,7 @@ impl ParsedArgs {
             };
         }
 
+        // get the custom title from command line arguments or nothing
         let custom_title: String;
         if let Some(name) = match_results.get_one::<String>("custom_title") {
             custom_title = name.to_owned();
